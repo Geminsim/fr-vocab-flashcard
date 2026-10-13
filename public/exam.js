@@ -3,43 +3,56 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
+  const iconPaths = {
+    play: '<path d="m9 5 10 7-10 7V5Z"/>',
+    pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+    exit: '<path d="M10 5H5v14h5M15 8l4 4-4 4M19 12H9"/>',
+    retry: '<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>',
+    close: '<path d="M5 5l14 14M19 5 5 19"/>',
+    arrow: '<path d="m9 5 7 7-7 7"/>',
+  };
+  const icon = name => `<svg class="exam-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconPaths[name]}</svg>`;
+
   function create({ cards, quizCore, examCore, english, reverse, api, labelFor,
                     levelSelect, scopeSelect, ready, restorePractice, stopSpeech }) {
     const L = (zh, en) => english ? en : zh;
     const language = english ? "en" : "zh";
     const direction = reverse ? "reverse" : "forward";
     const $ = id => document.getElementById(id);
+    const cardById = new Map(cards.map(card => [card.id, card]));
     const quizCard = document.querySelector(".quiz-card");
     const practiceArea = $("question-area");
     const emptyArea = $("empty-state");
     const panel = document.createElement("section");
     panel.className = "panel exam-panel";
     panel.setAttribute("aria-labelledby", "exam-panel-title");
-    panel.innerHTML = `<div class="section-heading"><span class="section-index">EX</span><h2 id="exam-panel-title">${L("零失误考试", "Zero-miss exams")}</h2></div>
-      <p class="exam-intro">${L("每题 15 秒。答错或超时即结束；考试不改动词汇掌握次数。", "15 seconds per card. One error or timeout ends the attempt. Exams do not change mastery counts.")}</p>
+    panel.innerHTML = `<div class="section-heading"><span class="section-index">EX</span><h2 id="exam-panel-title">${L("完整词库考试", "Full-deck exams")}</h2></div>
+      <p class="exam-intro">${L("当前范围每张词卡都会考到；每题 15 秒，答错或超时即结束。可随时暂停。", "Every card in the selected scope appears once. 15 seconds each; one error or timeout ends the attempt. Pause anytime.")}</p>
       <div class="exam-selected"><strong id="exam-selected-title"></strong><span id="exam-selected-best"></span></div>
-      <button type="button" class="exam-start" id="exam-start">${L("挑战当前范围", "Exam this scope")}</button>
-      <div class="exam-active-summary" id="exam-active-summary" hidden><p id="exam-active-copy"></p><div class="exam-active-actions"><button type="button" id="exam-resume">${L("继续考试", "Resume exam")}</button><button type="button" id="exam-abandon">${L("放弃本次", "Abandon attempt")}</button></div></div>
+      <button type="button" class="exam-start" id="exam-start">${icon("play")}<span>${L("开始完整考试", "Start full exam")}</span></button>
+      <div class="exam-active-summary" id="exam-active-summary" hidden><p id="exam-active-copy"></p><div class="exam-active-actions"><button type="button" class="exam-icon-only" id="exam-resume" aria-label="${L("继续考试", "Resume exam")}" title="${L("继续考试", "Resume exam")}">${icon("play")}</button><button type="button" class="exam-icon-only" id="exam-abandon" aria-label="${L("放弃本次", "Abandon attempt")}" title="${L("放弃本次", "Abandon attempt")}">${icon("close")}</button></div></div>
       <p class="exam-sync" id="exam-sync" role="status" aria-live="polite"></p>
-      <details class="exam-directory"><summary>${L("各分类考试入口与最高分", "Category exams and best scores")}</summary><div class="exam-directory-list" id="exam-directory-list"></div></details>
+      <details class="exam-directory"><summary>${L("分类考试与最高分", "Category exams & bests")}</summary><div class="exam-directory-list" id="exam-directory-list"></div></details>
       <div class="exam-medal-heading"><strong>${L("勋章陈列", "Medal cabinet")}</strong><small>${L("本语言 · 本答题方向", "This language and direction")}</small></div>
       <div class="exam-medals" id="exam-medals"></div>
-      <p class="exam-medal-rule">${L("分级勋章：通过该等级总卷与全部大分类。小主题可额外挑战；“全上！”总卷单独授予终极勋章。", "Level medals: pass the level-wide exam and every main category. Topics are optional; the All In! exam earns its own ultimate medal.")}</p>`;
-    document.querySelector(".controls-panel").after(panel);
+      <p class="exam-medal-rule">${L(`每个等级：完整总卷及全部大分类通关。全上！：${cards.length.toLocaleString()} 题全部通关。旧抽考成绩保留但不计入新勋章。`, `Each rank: complete the full level and every main category. All In!: pass all ${cards.length.toLocaleString()} cards. Old sample scores remain but do not earn new medals.`)}</p>`;
+    document.querySelector(".sidebar").append(document.querySelector(".rule-panel"));
+    document.querySelector(".workspace").append(panel);
     const shortcut = document.createElement("button");
     shortcut.type = "button";
     shortcut.className = "exam-shortcut";
-    shortcut.textContent = L("进入当前分类考试 · 15 秒/题", "Exam this category · 15 sec/card");
+    shortcut.innerHTML = `${icon("play")}<span>${L("考试当前范围", "Exam this scope")}</span>`;
+    shortcut.title = L("当前范围每张词卡都会考到", "Every card in this scope will appear");
     $("scope-help").after(shortcut);
 
     const area = document.createElement("div");
     area.id = "exam-area";
     area.hidden = true;
     area.innerHTML = `<div class="exam-header"><span class="exam-pill">${L("考试模式 · 零失误", "EXAM · ZERO MISS")}</span><span id="exam-counter"></span></div>
-      <div class="exam-timer-row"><div class="exam-timer" id="exam-timer" role="timer" aria-label="${L("本题剩余时间", "Time remaining")}">15</div><div class="exam-timer-track"><span id="exam-timer-fill"></span></div><button type="button" class="exam-pause" id="exam-pause">${L("暂停并保存", "Pause & save")}</button></div>
+      <div class="exam-timer-row"><div class="exam-timer" id="exam-timer" role="timer" aria-label="${L("本题剩余时间", "Time remaining")}">15</div><div class="exam-timer-track"><span id="exam-timer-fill"></span></div><button type="button" class="exam-pause exam-icon-only" id="exam-pause" aria-label="${L("暂停并保存", "Pause & save")}" title="${L("暂停并保存", "Pause & save")}">${icon("pause")}</button></div>
       <div class="exam-content" id="exam-content"><p class="exam-scope" id="exam-scope"></p><h2 id="exam-heading"></h2><p class="exam-prompt" id="exam-prompt"></p><div class="answers" id="exam-answers" role="group" aria-label="${L("考试选项", "Exam choices")}"></div></div>
-      <div class="exam-cover" id="exam-cover" hidden><strong>${L("已暂停 · 题目已遮蔽", "Paused · question hidden")}</strong><p>${L("进度已保存在本机，并在联网时同步到账号。继续后从本题剩余时间答起。", "Saved on this device and synced to your account when online. Resume with this card's remaining time.")}</p><div><button type="button" id="exam-cover-resume">${L("继续考试", "Resume exam")}</button><button type="button" id="exam-exit">${L("返回练习", "Return to practice")}</button></div></div>
-      <div class="exam-result" id="exam-result" hidden><div id="exam-result-medal"></div><h2 id="exam-result-title"></h2><p id="exam-result-copy"></p><div class="exam-result-actions"><button type="button" id="exam-retry">${L("再试一次", "Try again")}</button><button type="button" id="exam-result-exit">${L("返回练习", "Return to practice")}</button></div></div>`;
+      <div class="exam-cover" id="exam-cover" hidden><strong>${L("已暂停 · 题目已遮蔽", "Paused · question hidden")}</strong><p>${L("进度已保存在本机，并在联网时同步到账号。继续后从本题剩余时间答起。", "Saved on this device and synced to your account when online. Resume with this card's remaining time.")}</p><div><button type="button" id="exam-cover-resume">${icon("play")}<span>${L("继续", "Resume")}</span></button><button type="button" id="exam-exit" aria-label="${L("返回练习", "Return to practice")}" title="${L("返回练习", "Return to practice")}">${icon("exit")}</button></div></div>
+      <div class="exam-result" id="exam-result" hidden><div id="exam-result-medal"></div><h2 id="exam-result-title"></h2><p id="exam-result-copy"></p><div class="exam-result-actions"><button type="button" id="exam-retry">${icon("retry")}<span>${L("重试", "Retry")}</span></button><button type="button" id="exam-result-exit" aria-label="${L("返回练习", "Return to practice")}" title="${L("返回练习", "Return to practice")}">${icon("exit")}</button></div></div>`;
     quizCard.append(area);
     const refs = {
       start: $("exam-start"), shortcut, selectedTitle: $("exam-selected-title"), selectedBest: $("exam-selected-best"),
@@ -55,16 +68,48 @@
     };
     let accountId = null;
     let localKey = null;
-    let data = { active: null, history: {}, pendingAttempt: null, dirty: false };
+    let data = { active: null, history: {}, pendingAttempt: null, dirty: false, finishedIds: [] };
     let running = false;
     let visible = false;
     let syncing = null;
     let timerId = null;
     let deadline = 0;
     let lastResult = null;
+    let cachedOrder = null;
+    let cachedOrderId = null;
 
     function examKey(level = levelSelect.value, scope = scopeSelect.value) {
       return examCore.key(language, direction, level, scope);
+    }
+    function poolFor(attempt) {
+      return cards.filter(card => quizCore.eligibleInView(card, attempt.level, attempt.scope));
+    }
+    function deckFor(attempt) {
+      return cards.filter(card => quizCore.levelEligible(card, attempt.level));
+    }
+    function orderFor(attempt, pool = poolFor(attempt)) {
+      if (examCore.poolHash(pool) !== attempt.poolHash || pool.length !== attempt.total) {
+        throw new Error(L("词库在这场考试期间发生变化；请联系我修复存档。", "The deck changed during this exam; this save needs repair."));
+      }
+      if (cachedOrderId !== attempt.id || !cachedOrder) {
+        cachedOrder = examCore.orderIds(pool, attempt.seed, attempt.prefixIds);
+        cachedOrderId = attempt.id;
+      }
+      return cachedOrder;
+    }
+    function upgradeLegacy(attempt) {
+      if (!attempt?.questions || attempt.format === examCore.FORMAT) return attempt;
+      if (attempt.status !== "active" && attempt.status !== "paused") return attempt;
+      const pool = poolFor(attempt);
+      const prefixIds = attempt.questions.map(question => question.cardId);
+      const current = attempt.questions[attempt.cursor];
+      if (!current || !pool.length) return attempt;
+      return { id: attempt.id, key: examCore.key(attempt.language, attempt.direction, attempt.level, attempt.scope),
+        language: attempt.language, direction: attempt.direction, level: attempt.level, scope: attempt.scope,
+        format: examCore.FORMAT, seed: (Math.random() * 0x100000000) >>> 0,
+        poolHash: examCore.poolHash(pool), prefixIds, total: pool.length, question: current,
+        cursor: attempt.cursor, remainingMs: attempt.remainingMs, status: "paused",
+        seq: attempt.seq + 1, startedAt: attempt.startedAt, updatedAt: Date.now() };
     }
     function levelName(level) {
       return level === "ultimate" ? L("全上！", "All In!")
@@ -79,9 +124,12 @@
       const result = data.history[examKey(level, scope)];
       const available = cards.filter(card => quizCore.eligibleInView(card, level, scope)).length;
       const total = examCore.questionCount(level, scope, available);
-      return result ? L(`最高 ${result.best}/${result.total}${result.passed ? " · 已通关" : ""}`,
-        `Best ${result.best}/${result.total}${result.passed ? " · passed" : ""}`)
-        : L(`尚未挑战 · ${total} 题`, `Not attempted · ${total} cards`);
+      if (result) return L(`最高 ${result.best}/${result.total}${result.passed && result.total === total ? " · 已通关" : ""}`,
+        `Best ${result.best}/${result.total}${result.passed && result.total === total ? " · passed" : ""}`);
+      const old = data.history[examCore.legacyKey(language, direction, level, scope)];
+      return old ? L(`完整考试 ${total} 题 · 旧抽考 ${old.best}/${old.total} 已保留`,
+        `Full exam ${total} cards · old sample ${old.best}/${old.total} kept`)
+        : L(`完整考试 · ${total} 题`, `Full exam · ${total} cards`);
     }
     function saveLocal() {
       if (!localKey) return;
@@ -140,13 +188,13 @@
       const attempt = data.active;
       if (!attempt) return;
       area.classList.remove("is-result");
-      const question = attempt.questions[attempt.cursor];
-      const card = cards.find(item => item.id === question.cardId);
+      const question = attempt.question;
+      const card = cardById.get(question?.cardId);
       if (!card) { status(L("词库已更新，无法继续这场考试。请放弃后重新开始。", "The deck changed. Abandon this attempt and start again."), true); return; }
       refs.result.hidden = true;
       refs.timerRow.hidden = false;
       refs.content.hidden = false;
-      refs.counter.textContent = `${attempt.cursor + 1} / ${attempt.questions.length}`;
+      refs.counter.textContent = `${attempt.cursor + 1} / ${attempt.total}`;
       refs.scope.textContent = `${levelName(attempt.level)} · ${scopeName(attempt.scope)}`;
       refs.heading.textContent = reverse ? card.meaning : card.term;
       refs.heading.lang = reverse ? (english ? "en" : "zh-CN") : "fr";
@@ -205,7 +253,10 @@
         info.append(name, score);
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = L("进入", "Enter");
+        button.className = "exam-icon-only";
+        button.innerHTML = icon("arrow");
+        button.setAttribute("aria-label", L(`进入${name.textContent}完整考试`, `Start full ${name.textContent} exam`));
+        button.title = button.getAttribute("aria-label");
         button.disabled = !!data.active || !ready();
         button.addEventListener("click", () => start(option.value));
         row.append(info, button);
@@ -213,33 +264,39 @@
       }
     }
 
-    function renderPanel() {
+    function renderPanel({ full = true } = {}) {
       const level = levelSelect.value;
       const scope = scopeSelect.value;
       refs.selectedTitle.textContent = `${levelName(level)} · ${scopeSelect.options[scopeSelect.selectedIndex]?.textContent || ""}`;
       refs.selectedBest.textContent = bestText(scope);
+      const count = cards.filter(card => quizCore.eligibleInView(card, level, scope)).length;
+      refs.start.querySelector("span").textContent = L(`开始 · ${count.toLocaleString()} 题`, `Start · ${count.toLocaleString()} cards`);
+      refs.shortcut.querySelector("span").textContent = L(`考试 · ${count.toLocaleString()} 题`, `Exam · ${count.toLocaleString()} cards`);
       refs.start.disabled = !ready() || !!data.active || !!data.pendingAttempt;
       refs.shortcut.disabled = refs.start.disabled;
       refs.activeSummary.hidden = !data.active;
       if (data.active) {
         const attempt = data.active;
-        refs.activeCopy.textContent = L(`${running ? "进行中" : "待继续"}：${levelName(attempt.level)} · ${scopeName(attempt.scope)} · 第 ${attempt.cursor + 1}/${attempt.questions.length} 题`,
-          `${running ? "In progress" : "Resume"}: ${levelName(attempt.level)} · ${scopeName(attempt.scope)} · card ${attempt.cursor + 1}/${attempt.questions.length}`);
+        refs.activeCopy.textContent = L(`${running ? "进行中" : "待继续"}：${levelName(attempt.level)} · ${scopeName(attempt.scope)} · 第 ${attempt.cursor + 1}/${attempt.total} 题`,
+          `${running ? "In progress" : "Resume"}: ${levelName(attempt.level)} · ${scopeName(attempt.scope)} · card ${attempt.cursor + 1}/${attempt.total}`);
         const match = attempt.language === language && attempt.direction === direction;
         refs.resume.disabled = !match || !ready() || running;
-        refs.resume.textContent = match ? L("继续考试", "Resume exam")
+        const resumeLabel = match ? L("继续考试", "Resume exam")
           : L("请切回原语言与方向", "Switch to the original language and direction");
+        refs.resume.setAttribute("aria-label", resumeLabel);
+        refs.resume.title = resumeLabel;
       }
-      renderDirectory();
-      renderMedals();
+      if (full) { renderDirectory(); renderMedals(); }
     }
 
     function recordResult(attempt) {
       const prior = data.history[attempt.key];
       data.history[attempt.key] = { best: Math.max(prior?.best || 0, attempt.cursor),
-        total: attempt.questions.length, passed: !!prior?.passed || attempt.status === "passed" };
+        total: attempt.total ?? attempt.questions?.length, passed: !!prior?.passed || attempt.status === "passed" };
+      data.finishedIds = [...new Set([...(data.finishedIds || []), attempt.id])].slice(-20);
       data.pendingAttempt = attempt;
       data.active = null;
+      cachedOrder = null; cachedOrderId = null;
       data.dirty = false;
       saveLocal();
       renderPanel();
@@ -253,17 +310,17 @@
       blurQuestion(false);
       refs.result.hidden = false;
       refs.timerRow.hidden = true;
-      refs.counter.textContent = `${attempt.cursor} / ${attempt.questions.length}`;
+      refs.counter.textContent = `${attempt.cursor} / ${attempt.total ?? attempt.questions?.length}`;
       refs.resultTitle.textContent = attempt.status === "passed"
         ? L("零失误通关！", "Flawless pass!") : L("本次考试结束", "Attempt ended");
       const reason = attempt.failure === "timeout" ? L("本题超时。", "Time ran out.")
         : attempt.failure === "wrong" ? L("出现一题错误。", "One answer was incorrect.")
           : L("已放弃本次考试。", "This attempt was abandoned.");
-      refs.resultCopy.textContent = `${attempt.status === "passed" ? "" : `${reason} `}${L("本次", "Score")} ${attempt.cursor}/${attempt.questions.length} · ${bestText(attempt.scope, attempt.level)}`;
+      refs.resultCopy.textContent = `${attempt.status === "passed" ? "" : `${reason} `}${L("本次", "Score")} ${attempt.cursor}/${attempt.total ?? attempt.questions?.length} · ${bestText(attempt.scope, attempt.level)}`;
       refs.resultMedal.replaceChildren();
       refs.retry.disabled = !!data.pendingAttempt;
-      refs.retry.textContent = data.pendingAttempt
-        ? L("同步后可再试", "Retry after sync") : L("再试一次", "Try again");
+      refs.retry.querySelector("span").textContent = data.pendingAttempt
+        ? L("同步后重试", "Retry after sync") : L("再试", "Retry");
       if (attempt.status === "passed" && examCore.medalEarned(data.history, language, direction, attempt.level, cards, quizCore)) {
         const img = document.createElement("img");
         img.src = `medals/${attempt.level.toLowerCase()}.svg`;
@@ -278,16 +335,21 @@
       const ms = remaining();
       stopTimer();
       running = false;
-      const question = attempt.questions[attempt.cursor];
+      const question = attempt.question;
       const action = forced === "timeout" || ms <= 0 ? "timeout"
         : index === question.correctIndex ? "correct" : "wrong";
       const next = examCore.transition(attempt, action);
       if (next.status === "active") {
+        const pool = poolFor(attempt);
+        const nextId = orderFor(attempt, pool)[next.cursor];
+        next.question = examCore.makeQuestion(cardById.get(nextId), pool, deckFor(attempt),
+          attempt.direction, quizCore);
         data.active = next;
         data.dirty = true;
         saveLocal();
         renderQuestion();
         running = true;
+        renderPanel({ full: false });
         startTimer();
         void syncPending();
       } else {
@@ -319,6 +381,8 @@
     function resume() {
       const attempt = data.active;
       if (!attempt || attempt.language !== language || attempt.direction !== direction || !ready()) return;
+      try { orderFor(attempt); }
+      catch (error) { status(error.message, true); return; }
       if (attempt.status === "active") data.active = examCore.transition(attempt, "pause", attempt.remainingMs);
       data.active = examCore.transition(data.active, "resume");
       data.dirty = true;
@@ -340,14 +404,21 @@
       const level = levelSelect.value;
       const pool = cards.filter(card => quizCore.eligibleInView(card, level, scope));
       const deck = cards.filter(card => quizCore.levelEligible(card, level));
-      let questions;
-      try { questions = examCore.makeQuestions(pool, deck, level, scope, direction, quizCore); }
+      const seed = (Math.random() * 0x100000000) >>> 0;
+      let order, question;
+      try {
+        order = examCore.orderIds(pool, seed);
+        question = examCore.makeQuestion(cardById.get(order[0]), pool, deck, direction, quizCore);
+      }
       catch (error) { status(error.message, true); return; }
       const now = Date.now();
       data.active = { id: typeof globalThis.crypto?.randomUUID === "function" ? globalThis.crypto.randomUUID()
         : `${now}-${Math.random().toString(36).slice(2, 12)}`, key: examKey(level, scope),
-        language, direction, level, scope, questions, cursor: 0, remainingMs: 15000,
+        language, direction, level, scope, format: examCore.FORMAT, seed,
+        poolHash: examCore.poolHash(pool), prefixIds: [], total: pool.length, question,
+        cursor: 0, remainingMs: 15000,
         status: "active", seq: 0, startedAt: now, updatedAt: now };
+      cachedOrder = order; cachedOrderId = data.active.id;
       data.dirty = true;
       saveLocal();
       stopSpeech();
@@ -389,11 +460,11 @@
               data.dirty = false;
             }
             saveLocal();
-            renderPanel();
+            renderPanel({ full: terminal });
             if (lastResult?.id === snapshot.id) {
               refs.retry.disabled = !!data.pendingAttempt;
-              refs.retry.textContent = data.pendingAttempt
-                ? L("同步后可再试", "Retry after sync") : L("再试一次", "Try again");
+              refs.retry.querySelector("span").textContent = data.pendingAttempt
+                ? L("同步后重试", "Retry after sync") : L("再试", "Retry");
             }
           }
           status(L("考试进度已同步到账号。", "Exam progress synced to your account."));
@@ -419,8 +490,14 @@
         data = raw && typeof raw === "object" ? {
           active: raw.active || null, history: raw.history || {},
           pendingAttempt: raw.pendingAttempt || null, dirty: raw.dirty === true,
-        } : { active: null, history: {}, pendingAttempt: null, dirty: false };
-      } catch (_) { data = { active: null, history: {}, pendingAttempt: null, dirty: false }; }
+          finishedIds: Array.isArray(raw.finishedIds) ? raw.finishedIds.slice(-20) : [],
+        } : { active: null, history: {}, pendingAttempt: null, dirty: false, finishedIds: [] };
+      } catch (_) { data = { active: null, history: {}, pendingAttempt: null, dirty: false, finishedIds: [] }; }
+      cachedOrder = null; cachedOrderId = null;
+      if (data.active?.questions) {
+        const upgraded = upgradeLegacy(data.active);
+        if (upgraded !== data.active) { data.active = upgraded; data.dirty = true; saveLocal(); }
+      }
       if (data.active?.status === "active") {
         data.active = examCore.transition(data.active, "pause", data.active.remainingMs);
         data.dirty = true;
@@ -432,17 +509,27 @@
     function onCloud(remote) {
       if (!accountId || !remote || typeof remote !== "object") return;
       mergeHistory(remote.history);
-      if (remote.active && data.active && remote.active.id !== data.active.id) {
-        if (!data.dirty) data.active = remote.active;
+      data.finishedIds = [...new Set([...(data.finishedIds || []),
+        ...(Array.isArray(remote.closedIds) ? remote.closedIds : [])])].slice(-20);
+      const remoteActive = data.finishedIds.includes(remote.active?.id) ? null : upgradeLegacy(remote.active);
+      if (data.active && data.finishedIds.includes(data.active.id)) {
+        if (running) { stopTimer(); running = false; setVisible(false); }
+        data.active = null;
+        data.dirty = false;
+        cachedOrder = null; cachedOrderId = null;
+      }
+      if (remoteActive && data.active && remoteActive.id !== data.active.id) {
+        if (!data.dirty) data.active = remoteActive;
         else status(L("另一台设备已有不同的考试。请先在原设备同步，或放弃本机考试。",
           "Another device has a different exam. Sync the first device or abandon this local attempt."), true);
-      } else if (remote.active && data.pendingAttempt?.id === remote.active.id) {
+      } else if (remoteActive && data.pendingAttempt?.id === remoteActive.id) {
         // A completed local attempt is newer than the last cloud checkpoint.
-      } else if (remote.active && (!data.active || remote.active.seq > data.active.seq)) {
+      } else if (remoteActive && (!data.active || remoteActive.seq > data.active.seq)) {
         if (running) { stopTimer(); running = false; blurQuestion(true); }
-        data.active = remote.active;
-        data.dirty = false;
-      } else if (!remote.active && data.active && !data.dirty) {
+        data.active = remoteActive;
+        cachedOrder = null; cachedOrderId = null;
+        data.dirty = !!remote.active?.questions;
+      } else if (!remoteActive && data.active && !data.dirty) {
         if (running) { stopTimer(); running = false; blurQuestion(true); }
         data.active = null;
       }

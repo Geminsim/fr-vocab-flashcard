@@ -15,23 +15,37 @@ const cards = [...browser.window.TEF_VOCAB_CARDS, ...browser.window.TEF_EVERYDAY
 const core = browser.QuizCore;
 const exam = browser.TEFExamCore;
 assert.equal(cards.length, 4897);
-assert.equal(cards.filter(card => core.levelEligible(card, "ultimate")).length, cards.length);
-assert.equal(cards.filter(card => core.eligibleInView(card, "ultimate", "group:地区口语")).length > 50, true);
-assert.deepEqual(Array.from(exam.groupsForLevel(cards, "A1", core)), ["分级词汇"]);
-assert.equal(exam.groupsForLevel(cards, "B2", core).length, 7);
-assert.equal(exam.questionCount("ultimate", "all", cards.length), 60);
+assert.equal(cards.filter(card => core.levelEligible(card, "ultimate")).length, 4897);
+assert.equal(exam.questionCount("ultimate", "all", cards.length), 4897);
+assert.equal(exam.questionCount("A1", "all", 553), 553);
 assert.equal(exam.questionCount("B2", "topic:写作句型", 9), 9);
-const questions = exam.makeQuestions(cards, cards, "ultimate", "all", "forward", core, Math.random);
-assert.equal(questions.length, 60);
-assert.equal(new Set(questions.map(question => question.cardId)).size, 60);
-for (const question of questions) {
+assert.deepEqual(Array.from(exam.groupsForLevel(cards, "A1", core)), ["分级词汇"]);
+
+const allOrder = exam.orderIds(cards, 230713);
+assert.equal(allOrder.length, cards.length);
+assert.equal(new Set(allOrder).size, cards.length);
+assert.deepEqual(allOrder, exam.orderIds(cards, 230713));
+assert.notDeepEqual(allOrder.slice(0, 20), exam.orderIds(cards, 17).slice(0, 20));
+assert.match(exam.poolHash(cards), /^4897-[0-9a-f]+$/);
+const firstCard = cards.find(card => card.id === allOrder[0]);
+for (const direction of ["forward", "reverse"]) {
+  const question = exam.makeQuestion(firstCard, cards, cards, direction, core);
   assert.equal(question.options.length, 4);
-  assert.ok(question.correctIndex >= 0 && question.correctIndex < 4);
+  assert.equal(question.options[question.correctIndex], direction === "reverse" ? firstCard.term : firstCard.meaning);
 }
+const smallScope = cards.filter(card => core.eligibleInView(card, "everyday", "topic:法国粗俗"));
+assert.equal(smallScope.length, 3);
+assert.equal(exam.questionCount("everyday", "topic:法国粗俗", smallScope.length), 3);
+assert.equal(exam.makeQuestion(smallScope[0], smallScope, cards, "forward", core).options.length, 4);
+
+const tiny = cards.slice(0, 4);
+const tinyOrder = exam.orderIds(tiny, 314159);
+const question = exam.makeQuestion(tiny.find(card => card.id === tinyOrder[0]), tiny, cards, "forward", core);
 const first = { id: "exam-test-123", key: exam.key("en", "forward", "A1", "all"),
-  language: "en", direction: "forward", level: "A1", scope: "all",
-  questions: questions.slice(0, 4), cursor: 0, remainingMs: 15000,
-  status: "active", seq: 0, startedAt: Date.now(), updatedAt: Date.now() };
+  language: "en", direction: "forward", level: "A1", scope: "all", format: 2,
+  seed: 314159, poolHash: exam.poolHash(tiny), prefixIds: [], total: 4, question,
+  cursor: 0, remainingMs: 15000, status: "active", seq: 0,
+  startedAt: Date.now(), updatedAt: Date.now() };
 const paused = exam.transition(first, "pause", 7200);
 assert.equal(paused.remainingMs, 7200);
 assert.equal(paused.status, "paused");
@@ -40,6 +54,11 @@ assert.equal(resumed.status, "active");
 const wrong = exam.transition(resumed, "wrong");
 assert.equal(wrong.status, "failed");
 assert.equal(wrong.cursor, 0);
+let passed = first;
+for (let i = 0; i < 4; i++) passed = exam.transition(passed, "correct");
+assert.equal(passed.status, "passed");
+assert.equal(passed.cursor, 4);
+assert.equal(passed.question, null);
 
 const server = {};
 const index = JSON.parse(load("db/mastery-index.json"));
@@ -52,27 +71,36 @@ runInNewContext(compiled, { exports: server,
     : name === "./mastery-index.json" ? index
       : name === "./card-aliases.json" ? aliases : assert.fail(name),
 });
-const progress = { records: { "sample-card": { attempts: 2, firstCorrect: true,
-  cleanCount: 2, streak: 2, misses: 0, mastered: true, due: 0 } },
-  totalAnswers: 2, generation: 0, deviceSeq: {}, studyLanguage: "en",
-  exam: { active: null, history: {} } };
+const record = { attempts: 2, firstCorrect: true, cleanCount: 2,
+  streak: 2, misses: 0, mastered: true, due: 0 };
+const legacyKey = exam.legacyKey("en", "forward", "A1", "all");
+const progress = { records: { "sample-card": record }, totalAnswers: 2,
+  generation: 0, deviceSeq: {}, studyLanguage: "en",
+  exam: { active: null, history: { [legacyKey]: { best: 27, total: 30, passed: false } } } };
 assert.equal(server.checkpointExam(progress, first), true);
 assert.equal(server.checkpointExam(progress, paused), true);
 assert.equal(server.checkpointExam(progress, wrong), true);
 assert.equal(progress.exam.active, null);
 assert.equal(progress.exam.history[first.key].best, 0);
-assert.equal(progress.exam.history[first.key].passed, false);
+assert.equal(progress.exam.history[legacyKey].best, 27);
+assert.equal(progress.exam.closedIds.includes(first.id), true);
+assert.equal(server.checkpointExam(progress, paused), false);
+assert.equal(progress.exam.active, null);
 assert.equal(progress.records["sample-card"].attempts, 2);
 assert.equal(progress.totalAnswers, 2);
-const passed = { ...first, id: "exam-test-456", seq: 4, cursor: first.questions.length,
-  status: "passed", updatedAt: Date.now() + 1 };
-assert.equal(server.checkpointExam(progress, passed), true);
+assert.equal(server.checkpointExam(progress, { ...passed, id: "exam-test-456" }), true);
 assert.equal(progress.exam.history[first.key].best, 4);
 assert.equal(progress.exam.history[first.key].passed, true);
-assert.equal(exam.medalEarned({ [first.key]: progress.exam.history[first.key] },
-  "en", "forward", "A1", cards, core), false);
-const groupKey = exam.key("en", "forward", "A1", "group:分级词汇");
-assert.equal(exam.medalEarned({ [first.key]: progress.exam.history[first.key],
-  [groupKey]: { best: 20, total: 20, passed: true } }, "en", "forward", "A1", cards, core), true);
 assert.throws(() => server.checkpointExam(progress, { ...first, key: "wrong" }), /Invalid exam/);
-console.log("PASS: all-deck eligibility, exam transitions, account checkpoints, best scores and medals");
+assert.throws(() => server.checkpointExam(progress, { ...first, total: 0 }), /Invalid full-deck/);
+
+const a1Total = cards.filter(card => core.eligibleInView(card, "A1", "all")).length;
+const a1Group = cards.filter(card => core.eligibleInView(card, "A1", "group:分级词汇")).length;
+const a1History = {
+  [exam.key("en", "forward", "A1", "all")]: { best: a1Total, total: a1Total, passed: true },
+  [exam.key("en", "forward", "A1", "group:分级词汇")]: { best: a1Group, total: a1Group, passed: true },
+};
+assert.equal(exam.medalEarned(a1History, "en", "forward", "A1", cards, core), true);
+assert.equal(exam.medalEarned({ ...a1History, [exam.key("en", "forward", "A1", "all")]:
+  { best: 30, total: 30, passed: true } }, "en", "forward", "A1", cards, core), false);
+console.log("PASS: every-card exams, compact seeded saves, legacy history, full-scope medals");

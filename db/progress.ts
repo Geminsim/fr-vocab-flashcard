@@ -65,7 +65,15 @@ export type ExamAttempt = {
   direction: "forward" | "reverse";
   level: string;
   scope: string;
-  questions: Array<{ cardId: string; options: string[]; correctIndex: number }>;
+  // Version 2 stores a seed and one visible question, not thousands of answer strings.
+  format?: 2;
+  seed?: number;
+  poolHash?: string;
+  prefixIds?: string[];
+  total?: number;
+  question?: { cardId: string; options: string[]; correctIndex: number } | null;
+  // Retained only to read an exam started under the former sampled mode.
+  questions?: Array<{ cardId: string; options: string[]; correctIndex: number }>;
   cursor: number;
   remainingMs: number;
   status: "active" | "paused" | "failed" | "passed" | "abandoned";
@@ -78,10 +86,11 @@ export type ExamAttempt = {
 export type ExamState = {
   active: ExamAttempt | null;
   history: Record<string, { best: number; total: number; passed: boolean }>;
+  closedIds: string[];
 };
 
 function blankExam(): ExamState {
-  return { active: null, history: {} };
+  return { active: null, history: {}, closedIds: [] };
 }
 
 function db() {
@@ -120,41 +129,73 @@ function parsePayload(value: string): CloudProgress {
   // Older accounts have no language choice yet; keep every existing answer intact.
   raw.studyLanguage = raw.studyLanguage === "en" || raw.studyLanguage === "zh" ? raw.studyLanguage : null;
   if (!raw.exam || typeof raw.exam !== "object" || !raw.exam.history) raw.exam = blankExam();
+  raw.exam.closedIds = Array.isArray(raw.exam.closedIds) ? raw.exam.closedIds.filter(id =>
+    typeof id === "string" && /^[\w-]{8,80}$/.test(id)).slice(-20) : [];
   return raw;
+}
+
+function cleanExamQuestion(input: unknown) {
+  if (!input || typeof input !== "object") throw new Error("Invalid exam question");
+  const question = input as Record<string, unknown>;
+  if (typeof question.cardId !== "string" ||
+      !/^[\w.-]{1,120}$/.test(question.cardId) ||
+      !Array.isArray(question.options) || question.options.length !== 4 ||
+      question.options.some(option => typeof option !== "string" || !option || option.length > 300) ||
+      !validInt(question.correctIndex, 3)) throw new Error("Invalid exam question");
+  return { cardId: question.cardId, options: question.options as string[],
+    correctIndex: Number(question.correctIndex) };
 }
 
 function cleanExamAttempt(input: unknown): ExamAttempt {
   if (!input || typeof input !== "object") throw new Error("Invalid exam attempt");
   const raw = input as Record<string, unknown>;
+  const full = raw.format === 2;
+  const expectedKey = full ? ["full-v2", raw.language, raw.direction, raw.level, raw.scope].join("|")
+    : [raw.language, raw.direction, raw.level, raw.scope].join("|");
   if (typeof raw.id !== "string" || !/^[\w-]{8,80}$/.test(raw.id) ||
       (raw.language !== "en" && raw.language !== "zh") ||
       (raw.direction !== "forward" && raw.direction !== "reverse") ||
       typeof raw.level !== "string" || !["A1", "A2", "B1", "B2", "all", "everyday", "ultimate"].includes(raw.level) ||
       typeof raw.scope !== "string" || !/^(all|(?:group|topic):.{1,80})$/u.test(raw.scope) ||
-      raw.key !== [raw.language, raw.direction, raw.level, raw.scope].join("|") ||
-      !Array.isArray(raw.questions) || raw.questions.length < 4 || raw.questions.length > 60 ||
-      !validInt(raw.cursor, raw.questions.length) || !validInt(raw.remainingMs, 15000) ||
+      raw.key !== expectedKey ||
+      !validInt(raw.remainingMs, 15000) ||
       !validInt(raw.seq) || !validInt(raw.startedAt, 9_999_999_999_999) ||
       !validInt(raw.updatedAt, 9_999_999_999_999) ||
       !["active", "paused", "failed", "passed", "abandoned"].includes(String(raw.status))) {
     throw new Error("Invalid exam attempt");
   }
-  const questions = raw.questions.map(item => {
-    const question = item as Record<string, unknown>;
-    if (!question || typeof question.cardId !== "string" ||
-        !/^[\w.-]{1,120}$/.test(question.cardId) ||
-        !Array.isArray(question.options) || question.options.length !== 4 ||
-        question.options.some(option => typeof option !== "string" || !option || option.length > 300) ||
-        !validInt(question.correctIndex, 3)) throw new Error("Invalid exam question");
-    return { cardId: question.cardId, options: question.options as string[],
-      correctIndex: Number(question.correctIndex) };
-  });
-  if ((raw.status === "passed") !== (Number(raw.cursor) === questions.length)) {
+  let versioned: Partial<ExamAttempt>;
+  let total: number;
+  if (full) {
+    if (!validInt(raw.seed, 4_294_967_295) ||
+        typeof raw.poolHash !== "string" || !/^\d{1,5}-[0-9a-f]{1,8}$/.test(raw.poolHash) ||
+        !validInt(raw.total, 5000) || Number(raw.total) < 1 ||
+        !Array.isArray(raw.prefixIds) || raw.prefixIds.length > 60 ||
+        raw.prefixIds.some(id => typeof id !== "string" || !/^[\w.-]{1,120}$/.test(id)) ||
+        new Set(raw.prefixIds).size !== raw.prefixIds.length) throw new Error("Invalid full-deck exam");
+    total = Number(raw.total);
+    if (raw.prefixIds.length > total) throw new Error("Invalid full-deck exam");
+    const question = raw.question == null ? null : cleanExamQuestion(raw.question);
+    if ((raw.status === "active" || raw.status === "paused") && !question) {
+      throw new Error("Active exam has no question");
+    }
+    versioned = { format: 2, seed: Number(raw.seed), poolHash: raw.poolHash,
+      prefixIds: raw.prefixIds as string[], total, question };
+  } else {
+    if (!Array.isArray(raw.questions) || raw.questions.length < 1 || raw.questions.length > 60) {
+      throw new Error("Invalid legacy exam");
+    }
+    const questions = raw.questions.map(cleanExamQuestion);
+    total = questions.length;
+    versioned = { questions };
+  }
+  if (!validInt(raw.cursor, total) ||
+      (raw.status === "passed") !== (Number(raw.cursor) === total)) {
     throw new Error("Invalid exam result");
   }
   return {
     id: raw.id, key: raw.key as string, language: raw.language, direction: raw.direction,
-    level: raw.level, scope: raw.scope, questions,
+    level: raw.level, scope: raw.scope, ...versioned,
     cursor: Number(raw.cursor), remainingMs: Number(raw.remainingMs),
     status: raw.status as ExamAttempt["status"], seq: Number(raw.seq),
     startedAt: Number(raw.startedAt), updatedAt: Number(raw.updatedAt),
@@ -164,18 +205,22 @@ function cleanExamAttempt(input: unknown): ExamAttempt {
 
 export function checkpointExam(progress: CloudProgress, input: unknown): boolean {
   const attempt = cleanExamAttempt(input);
+  progress.exam.closedIds ??= [];
+  if (progress.exam.closedIds.includes(attempt.id)) return false;
   const current = progress.exam.active;
   if (current && current.id !== attempt.id) throw new Error("Another exam is already in progress");
   if (current && attempt.seq <= current.seq) return false;
   const finished = ["failed", "passed", "abandoned"].includes(attempt.status);
   if (finished) {
+    const total = attempt.total ?? attempt.questions!.length;
     const prior = progress.exam.history[attempt.key];
     progress.exam.history[attempt.key] = {
       best: Math.max(prior?.best || 0, attempt.cursor),
-      total: attempt.questions.length,
+      total,
       passed: !!prior?.passed || attempt.status === "passed",
     };
     progress.exam.active = null;
+    progress.exam.closedIds = [...progress.exam.closedIds, attempt.id].slice(-20);
   } else progress.exam.active = attempt;
   return true;
 }

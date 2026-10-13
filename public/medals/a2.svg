@@ -1,6 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" role="img" aria-labelledby="title"><title id="title">A2 Silver Pathfinder</title>
-<defs><linearGradient id="silver" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".35" stop-color="#a7b7c2"/><stop offset=".7" stop-color="#eef5f6"/><stop offset="1" stop-color="#8298a6"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity=".24"/></filter></defs>
-<path d="M40 104 28 170l31-17 21 20 8-66M120 104l12 66-31-17-21 20-8-66" fill="#54788d" stroke="#315467" stroke-width="3"/>
-<circle cx="80" cy="78" r="63" fill="url(#silver)" stroke="#607988" stroke-width="4" filter="url(#shadow)"/><circle cx="80" cy="78" r="51" fill="#eff5f3" stroke="#819da8" stroke-width="2"/><circle cx="80" cy="78" r="43" fill="none" stroke="#b9cbd0" stroke-width="2" stroke-dasharray="2 5"/>
-<path d="m50 99 30-48 30 48M61 81h38M58 108h44" fill="none" stroke="#5c7888" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><text x="80" y="128" text-anchor="middle" fill="#435f70" font-family="Georgia,serif" font-weight="bold" font-size="16">A2</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 300" role="img" aria-labelledby="title"><title id="title">Copper Vanguard</title>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe8b4"/><stop offset=".25" stop-color="#c38644"/><stop offset=".5" stop-color="#76482d"/><stop offset=".74" stop-color="#edbd72"/><stop offset="1" stop-color="#76482d"/></linearGradient>
+    <linearGradient id="enamel" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#35536a"/><stop offset="1" stop-color="#142d41"/></linearGradient>
+    <radialGradient id="gem" cx=".32" cy=".2" r=".88"><stop stop-color="#b5f1df"/><stop offset=".43" stop-color="#42a596"/><stop offset="1" stop-color="#176d83"/></radialGradient>
+    <linearGradient id="flash" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".7"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>
+    <filter id="shadow" x="-35%" y="-30%" width="170%" height="170%"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#071823" flood-opacity=".36"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+
+
+  <g filter="url(#shadow)"><g id="left-wing"><path d="M70 93C46 92 38 70 15 58C22 90 35 103 64 107Z" fill="url(#metal)" stroke="#26354c" stroke-width="2.5"/>
+      <path d="M58 101C38 95 30 78 21 68" fill="none" stroke="#fff9dd" stroke-opacity=".73" stroke-width="2"/></g><use href="#left-wing" transform="translate(256 0) scale(-1 1)"/>
+    <path d="M128 34C151 48 179 45 211 59L207 150C205 198 178 239 128 274C78 239 51 198 49 150L45 59C77 45 105 48 128 34Z" fill="#1b2837" stroke="#76482d" stroke-width="8"/>
+    <path d="M128 34C151 48 179 45 211 59L207 150C205 198 178 239 128 274C78 239 51 198 49 150L45 59C77 45 105 48 128 34Z" fill="url(#metal)" stroke="#ffe8b4" stroke-width="3" transform="translate(128 137) scale(.93) translate(-128 -137)"/>
+    <path d="M128 55C151 67 171 66 190 72L187 149C185 187 163 222 128 249C93 222 71 187 69 149L66 72C85 66 105 67 128 55Z" fill="url(#enamel)" stroke="#76482d" stroke-width="5"/>
+    <path d="M128 55C151 67 171 66 190 72L187 149C185 187 163 222 128 249C93 222 71 187 69 149L66 72C85 66 105 67 128 55Z" fill="url(#flash)" opacity=".26"/>
+    <path d="M80 81C100 68 113 67 128 73C143 67 156 68 176 81" fill="none" stroke="#ffe8b4" stroke-width="2.5" opacity=".8"/>
+    <path d="M87 84q41 13 82 0" fill="none" stroke="url(#metal)" stroke-width="2" opacity=".83"/><path d="m87 85 3 4-3 4-3-4Z" fill="url(#metal)" opacity=".82"/><path d="m107.5 85 3 4-3 4-3-4Z" fill="url(#metal)" opacity=".82"/><path d="m128 85 3 4-3 4-3-4Z" fill="url(#metal)" opacity=".82"/><path d="m148.5 85 3 4-3 4-3-4Z" fill="url(#metal)" opacity=".82"/><path d="m169 85 3 4-3 4-3-4Z" fill="url(#metal)" opacity=".82"/>
+    <path d="M93 219q35 21 70 0" fill="none" stroke="url(#metal)" stroke-width="3"/>
+    <path d="M104 230q24 13 48 0" fill="none" stroke="#fff6d5" stroke-opacity=".66" stroke-width="1.5"/><path d="M128 113 169 130 161 166 128 202 95 166 87 130Z" fill="url(#gem)" stroke="url(#metal)" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M87 130h82M128 113v89M87 130l41 72M169 130l-41 72" fill="none" stroke="#e9ffff" stroke-opacity=".65" stroke-width="2"/>
+    <path d="M128 119 128 198 95 166 87 130Z" fill="#fff" opacity=".14"/>
+    <path d="M94 131 128 121 162 131" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2"/>
+    <path d="M79 151c2 47 18 72 49 96 31-24 47-49 49-96" fill="none" stroke="#ffe8b4" stroke-opacity=".7" stroke-width="2"/>
+    <path d="M96 39 100 15l18 15 10-23 10 23 18-15 4 24L128 51Z" fill="url(#metal)" stroke="#473e49" stroke-width="3" stroke-linejoin="round"/><path d="M96 39h64l-5 13h-54Z" fill="url(#metal)" stroke="#473e49" stroke-width="2"/><circle cx="128" cy="30" r="5" fill="url(#gem)" stroke="#fff3cf" stroke-width="2"/>
+  </g>
+  <path d="M76 58q50-31 104 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>
 </svg>
