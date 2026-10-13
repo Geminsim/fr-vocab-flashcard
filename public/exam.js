@@ -180,7 +180,7 @@
         const item = document.createElement("div");
         item.className = `exam-medal ${earned ? "earned" : "locked"} ${level === "ultimate" ? "ultimate" : ""}`;
         const image = document.createElement("img");
-        image.src = `medals/${level}.svg`;
+        image.src = `medals/${level.toLowerCase()}.svg`;
         image.alt = earned ? L(`${names[level]} 勋章`, `${names[level]} medal`) : "";
         const label = document.createElement("span");
         label.textContent = names[level];
@@ -266,7 +266,7 @@
         ? L("同步后可再试", "Retry after sync") : L("再试一次", "Try again");
       if (attempt.status === "passed" && examCore.medalEarned(data.history, language, direction, attempt.level, cards, quizCore)) {
         const img = document.createElement("img");
-        img.src = `medals/${attempt.level}.svg`;
+        img.src = `medals/${attempt.level.toLowerCase()}.svg`;
         img.alt = L(`${attempt.level} 勋章`, `${attempt.level} medal`);
         refs.resultMedal.append(img);
       }
