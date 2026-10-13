@@ -28,6 +28,20 @@
     const destination = reverse ? "/reverse.html" : "/flashcards.html";
     document.getElementById("switch-sign-in").href = `/signin-with-chatgpt?return_to=${encodeURIComponent(destination)}`;
     document.getElementById("back-link").href = destination;
+    try {
+      if (localStorage.getItem("tef-primary-language-v1") === "en") {
+        document.documentElement.lang = "en";
+        document.title = "Switch practice account · French vocabulary";
+        document.querySelector(".brand > span:last-child").textContent = "French vocabulary flashcards";
+        document.getElementById("back-link").textContent = "Back to practice";
+        document.querySelector(".account-switch-page h1").textContent = "Continue with another account";
+        document.querySelector(".account-switch-page > p:not(.account-note)").textContent =
+          "You have signed out of this site. Sign in with the ChatGPT account whose progress you want to use. Each account keeps its own answer records; your previous account's progress remains saved.";
+        document.getElementById("switch-sign-in").textContent = "Sign in with ChatGPT";
+        document.querySelector(".account-note").textContent =
+          "If sign-in returns you to the previous account, switch accounts on the ChatGPT sign-in page or open this site in another browser session. This site cannot choose a ChatGPT account for you.";
+      }
+    } catch (_) { /* Language preference is optional. */ }
   </script>
 </body>
 </html>

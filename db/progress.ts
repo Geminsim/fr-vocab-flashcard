@@ -6,10 +6,12 @@ const lowLevelIds = new Set(masteryIndex.lowLevelIds);
 const aliases = cardAliases as Record<string, string>;
 
 function canonicalId(cardId: string) {
-  const reverse = cardId.startsWith("reverse:");
-  const base = reverse ? cardId.slice(8) : cardId;
+  const english = cardId.startsWith("en:");
+  const unprefixed = english ? cardId.slice(3) : cardId;
+  const reverse = unprefixed.startsWith("reverse:");
+  const base = reverse ? unprefixed.slice(8) : unprefixed;
   const target = aliases[base] || base;
-  return reverse ? `reverse:${target}` : target;
+  return `${english ? "en:" : ""}${reverse ? "reverse:" : ""}${target}`;
 }
 
 function mergeLegacyRecords(a: CardRecord, b: CardRecord): CardRecord {
@@ -27,7 +29,8 @@ function mergeLegacyRecords(a: CardRecord, b: CardRecord): CardRecord {
 }
 
 function masteryTarget(cardId: string) {
-  const baseId = cardId.startsWith("reverse:") ? cardId.slice(8) : cardId;
+  const unprefixed = cardId.startsWith("en:") ? cardId.slice(3) : cardId;
+  const baseId = unprefixed.startsWith("reverse:") ? unprefixed.slice(8) : unprefixed;
   return lowLevelIds.has(baseId) ? 2 : 3;
 }
 

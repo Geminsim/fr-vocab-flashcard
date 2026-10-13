@@ -3,15 +3,71 @@
 
   const examCards = window.TEF_VOCAB_CARDS;
   const everydayCards = window.TEF_EVERYDAY_CARDS;
-  const cards = Array.isArray(examCards) && Array.isArray(everydayCards)
+  const originalCards = Array.isArray(examCards) && Array.isArray(everydayCards)
     ? examCards.concat(everydayCards) : null;
+  const languageKey = "tef-primary-language-v1";
+  let savedLanguage = null;
+  try { savedLanguage = localStorage.getItem(languageKey); } catch (_) { /* Preference is optional. */ }
+  if (!["zh", "en"].includes(savedLanguage)) savedLanguage = null;
+  const language = savedLanguage === "en" ? "en" : "zh";
+  const english = language === "en";
+  const meanings = window.TEF_ENGLISH_MEANINGS || {};
+  const cards = originalCards?.map(card => english
+    ? { ...card, meaning: meanings[card.id] || card.meaning } : card);
+  const localized = (zh, en) => english ? en : zh;
+  const englishLabels = {
+    "阅读":"Reading", "分级词汇":"Graded vocabulary", "听力":"Listening", "写作":"Writing",
+    "同义替换":"Paraphrases", "连接词":"Connectors", "句型":"Sentence patterns",
+    "日常词汇":"Everyday words", "地区口语":"Regional & colloquial",
+    "日常生活与行政事务":"Daily life & administration", "日常安排与服务":"Routines & services",
+    "消费、经济与财务":"Shopping, economy & finance", "客服、消费与付款":"Customer service & payments",
+    "公共生活、旅行与文化":"Public life, travel & culture", "教育、学习与能力":"Education & skills",
+    "论证名词":"Argument nouns", "住房与行政手续":"Housing & paperwork",
+    "健康与医疗":"Health & medicine", "媒体、技术与信息":"Media, technology & information",
+    "文化 艺术与休闲":"Culture, arts & leisure", "评价形容词与副词":"Evaluative adjectives & adverbs",
+    "书面表达与细微语气":"Written expression & nuance", "家庭 人际关系与生活方式":"Family, relationships & lifestyle",
+    "常用动词、描述与连接表达":"Common verbs, descriptions & linking",
+    "住房与城市生活":"Housing & city life", "住房与家务":"Home & household",
+    "城市、交通与天气":"City, transport & weather", "环境、能源与城市":"Environment, energy & cities",
+    "环境、城市与科技":"Environment, cities & technology", "社会 人口与平等":"Society, population & equality",
+    "教育与学习":"Education & learning", "学习、工作与求职":"Study, work & job seeking",
+    "公共政策 法律与安全":"Public policy, law & safety", "职业、劳动与个人发展":"Careers, labour & personal growth",
+    "论证、推理与观点":"Argument, reasoning & opinion", "工作与职业":"Work & careers",
+    "招聘与职场":"Recruitment & workplace", "出行、休闲与文化":"Travel, leisure & culture",
+    "经济 消费与商业":"Economy, consumption & business", "经济、劳动与转型":"Economy, labour & transition",
+    "饮食、购物与日常消费":"Food, shopping & consumption", "论述动词、形容词与逻辑表达":"Argument verbs, adjectives & logic",
+    "身体、健康与情绪":"Body, health & emotions", "健康、生活方式与社会关系":"Health, lifestyle & relationships",
+    "健康与医疗服务":"Health & healthcare", "公民参与与国际议题":"Civic engagement & global issues",
+    "环境 能源与气候":"Environment, energy & climate", "环境、科学与数字风险":"Environment, science & digital risks",
+    "高频论述动词与固定搭配":"Common argument verbs & phrases", "科技 网络与媒体":"Technology, internet & media",
+    "沟通、数字生活与人际关系":"Communication, digital life & relationships",
+    "科学 研究与创新":"Science, research & innovation", "论证动词":"Argument verbs",
+    "社会政策、权利与公共议题":"Social policy, rights & public issues", "新闻、社会与政策":"News, society & policy",
+    "交通 旅游与出行":"Transport, tourism & travel", "交通与行程变更":"Transport & schedule changes",
+    "家庭、身体与衣着":"Family, body & clothing", "电话留言与预约":"Phone messages & appointments",
+    "食品 农业与消费习惯":"Food, agriculture & habits", "核心动词与常用表达":"Core verbs & expressions",
+    "结果":"Result", "基础形容词、副词与功能词":"Basic adjectives, adverbs & function words",
+    "举例与具体化":"Examples & specifics", "转折与让步":"Contrast & concession",
+    "口语转折、限制与推断":"Spoken contrast, limits & inference", "数字、日期与时间":"Numbers, dates & time",
+    "原因":"Cause", "公共通知与活动":"Public notices & events", "引入主题与观点":"Introducing topics & opinions",
+    "列举与递进":"Listing & progression", "比较与对照":"Comparison & contrast",
+    "写作句型":"Writing patterns", "解释与改述":"Explanation & reformulation",
+    "条件与假设":"Conditions & hypotheses", "目的":"Purpose", "居家、物品与位置":"Home, objects & location",
+    "总结与结论":"Summary & conclusion", "问候与个人信息":"Greetings & personal information",
+    "访谈观点与态度":"Interview views & attitudes", "教育与培训":"Education & training",
+    "副词":"Adverbs", "日常名词":"Everyday nouns", "形容词":"Adjectives", "日常动词":"Everyday verbs",
+    "魁省地区":"Québec regional", "魁省口语":"Québec colloquial", "法国口语":"France colloquial",
+    "魁省俗语":"Québec idioms", "法国粗俗":"France vulgar slang", "口语":"Colloquial"
+  };
+  const labelFor = value => english ? (englishLabels[value] || value) : value;
   const meta = window.TEF_VOCAB_META;
   const everydayMeta = window.TEF_EVERYDAY_META;
   const aliases = window.TEF_CARD_ALIASES || {};
   const core = window.QuizCore;
   const pronunciationApi = window.TEFPronunciation;
   const reverse = document.body.dataset.quizDirection === "reverse";
-  if (!Array.isArray(cards) || !meta || !everydayMeta || !core || !pronunciationApi) {
+  if (!Array.isArray(cards) || !meta || !everydayMeta || !core || !pronunciationApi ||
+      (english && Object.keys(meanings).length !== cards.length)) {
     document.body.textContent = "词库文件未加载。请保持 vocab-data.js、everyday-data.js、quiz-core.js 和 app.js 位于同一文件夹。";
     return;
   }
@@ -33,6 +89,140 @@
     context: $("card-context"), pronunciationActions: $("pronunciation-actions"),
     voiceRow: $("voice-row")
   };
+  function installLanguagePicker() {
+    const header = document.querySelector(".topbar");
+    const badge = $("sync-badge");
+    const actions = document.createElement("div");
+    actions.className = "topbar-actions";
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "language-trigger";
+    trigger.textContent = english ? "English · Français" : "中文 · Français";
+    trigger.setAttribute("aria-label", "Choose study language / 选择学习语言");
+    actions.append(trigger, badge);
+    header.append(actions);
+
+    const dialog = document.createElement("dialog");
+    dialog.className = "language-dialog";
+    dialog.setAttribute("aria-labelledby", "language-dialog-title");
+    dialog.innerHTML = `<div class="language-dialog-inner">
+      <p class="language-kicker">LANGUAGE · LANGUE · 语言</p>
+      <h2 id="language-dialog-title">Choose your study language<br><span>选择主要使用语言</span></h2>
+      <p class="language-intro">The French deck stays the same. Choose the language used for meanings and answers.<br>法语词库不变；请选择释义和答案使用的语言。</p>
+      <div class="language-choices">
+        <button type="button" data-language="zh"><strong>中文 ↔ Français</strong><span>中文释义 · Chinese meanings</span></button>
+        <button type="button" data-language="en"><strong>English ↔ Français</strong><span>English meanings · 英文释义</span></button>
+      </div>
+      <p class="language-note">Your Chinese and English mastery counts stay separate under the same account.<br>中法与英法的掌握次数分开记录，并同步到同一账号。</p>
+      <button type="button" class="language-close" ${savedLanguage ? "" : "hidden"}>${english ? "Keep current language" : "继续当前语言"}</button>
+    </div>`;
+    document.body.append(dialog);
+    dialog.addEventListener("cancel", event => {
+      if (!savedLanguage) event.preventDefault();
+    });
+    dialog.querySelector(".language-close").addEventListener("click", () => dialog.close());
+    dialog.querySelectorAll("[data-language]").forEach(button => {
+      button.addEventListener("click", () => {
+        try { localStorage.setItem(languageKey, button.dataset.language); }
+        catch (_) { showMessage("无法保存语言偏好；请检查浏览器存储设置。", true); return; }
+        window.location.reload();
+      });
+    });
+    trigger.addEventListener("click", async () => {
+      if (syncBusy || (syncMeta.pending.length && !(await syncNow()))) {
+        showMessage(localized("请先完成同步，再切换语言。", "Please sync your answers before changing language."), true);
+        return;
+      }
+      dialog.showModal();
+    });
+    if (!savedLanguage) dialog.showModal();
+  }
+
+  function applyEnglishStatic() {
+    if (!english) return;
+    document.documentElement.lang = "en";
+    document.title = reverse ? "French vocabulary · English to French" : "French vocabulary · French to English";
+    const staticText = {
+      '.practice-nav a[data-direction="forward"]': "French → English",
+      '.practice-nav a[data-direction="reverse"]': "English → French",
+      '.proverb-translation': "Practice makes progress — every word you recall becomes yours.",
+      '#page-lede': reverse ? "Read an English meaning and choose the matching French expression. Examples and audio appear after you answer."
+        : "Read a French word or expression and choose its English meaning. Your answers determine when it returns.",
+      '#controls-title': "Practice scope",
+      'label[for="level-select"]': "Choose deck / level",
+      '#level-help': "Everyday and regional French is a separate deck.",
+      'label[for="scope-select"]': "Category",
+      '#scope-help': "Filter by exercise type, theme, or regional usage.",
+      'label[for="mode-select"]': "Practice mode",
+      '#mode-select option[value="learning"]': "Learning",
+      '#mode-select option[value="mastered"]': "Mastered review",
+      '.sidebar-caption': "Current scope",
+      '#stat-total + span': "cards",
+      '#stat-mastered + span': "mastered",
+      '#stat-learning + span': "learning",
+      '#stat-new + span': "unseen",
+      '#session-title': "This session",
+      '#session-answered + span': "answered",
+      '#session-accuracy + span': "accuracy",
+      '#session-gained + span': "newly mastered",
+      '.session-panel > p': "New words and due reviews are interleaved; the same card will not appear repeatedly.",
+      '#data-title': "Account progress",
+      '#sync-detail': "Sign in with your own ChatGPT account. Progress syncs across devices and stays separate for each account.",
+      '#sync-button': "Sync now",
+      '#switch-account-button': "Switch account",
+      '#sign-in-link': "Sign in with ChatGPT",
+      '#export-button': "Export progress",
+      '#import-button': "Import progress",
+      '#reset-button': "Clear all answer records",
+      '#library summary strong': "Word library",
+      '#library summary small': "Search, check status, and review a card",
+      'label[for="library-search"]': "Search French or English meanings",
+      '#rules-title': "How mastery works",
+      '.rule-item:nth-of-type(2) p': "A1 / A2: two correct answers in a row, even after previous mistakes.",
+      '.rule-item:nth-of-type(3) p': "B1 / B2 / Everyday: three correct answers in a row; a mistake resets the streak.",
+      '.rule-footnote': "Multi-level cards use the lower target. Each direction and meaning language has separate mastery counts, synced to the same account.",
+      '#dictionary-meaning-label': "Meaning in this card",
+      '#dictionary-note-row dt': "Usage note",
+      '.dictionary-content > div:nth-of-type(3) dt': "Dictionary definitions (English)",
+      '.dictionary-content > div:nth-of-type(4) dt': "Examples (French)",
+      '.dictionary-content > div:nth-of-type(5) dt': "Synonyms",
+      '.dictionary-content > div:nth-of-type(6) dt': "Antonyms",
+      '.dictionary-caution': "Dictionary entries may include other senses. Check the meaning in this card for context.",
+      '#dictionary-source-fr': "French Wiktionary",
+      '#dictionary-source-en': "English Wiktionary",
+      '#play-pronunciation-slow': "Slow",
+      '#play-pronunciation': "♪ Play",
+      'label[for="voice-locale"]': "Accent",
+      '#voice-locale option[value="fr-FR"]': "France",
+      '#voice-locale option[value="fr-CA"]': "Canada",
+      '#question-prompt': reverse ? "Which French expression matches this meaning?" : "Which English meaning best matches this French expression?",
+      '#reveal-button': "Show answer (marked incorrect)",
+      '.key-hint': "Press 1–4 to answer · Enter for next card",
+      '#feedback-answer-label': reverse ? "Correct French:" : "Correct meaning:",
+      '#next-button': "Next card →",
+      '#empty-title': "No cards in this view",
+      '#empty-action': "Review mastered words",
+    };
+    for (const [selector, value] of Object.entries(staticText)) {
+      const node = document.querySelector(selector);
+      if (node) node.textContent = value;
+    }
+    document.querySelector(".deck-count span").firstChild.textContent = "unique cards";
+    $("library-search").placeholder = "e.g. logement / housing";
+    $("answers").setAttribute("aria-label", reverse ? "Choose French expression" : "Choose English meaning");
+    document.querySelector(".practice-nav").setAttribute("aria-label", "Practice direction");
+    document.querySelector(".deck-count").setAttribute("aria-label", "Deck size");
+    $("pronunciation-actions").setAttribute("aria-label", "Play French pronunciation");
+    $("mastery-bar").setAttribute("aria-label", "Mastered percentage in current scope");
+    $("dictionary-popover").setAttribute("aria-label", "Word details");
+    $("dictionary-close").setAttribute("aria-label", "Close word details");
+    $("play-pronunciation").setAttribute("aria-label", "Play French pronunciation");
+    $("play-pronunciation-slow").setAttribute("aria-label", "Play French pronunciation slowly");
+    const footer = document.querySelector(".site-footer");
+    footer.firstChild.textContent = "A1–B2 French vocabulary and a separate everyday deck · Account-synced self-test ";
+    footer.querySelector("span").firstChild.textContent = "Everyday words are supplementary, not an official exam list. English meanings are translated from the original Chinese card meanings. ";
+    footer.querySelector("a").textContent = "Everyday-deck sources and licenses";
+  }
   const pronunciation = pronunciationApi.createEngine(window.speechSynthesis, window.SpeechSynthesisUtterance);
   try {
     if (localStorage.getItem(voiceKey) === "fr-CA") ui.locale.value = "fr-CA";
@@ -48,7 +238,10 @@
   let dictionaryPinned = false;
   let activeDictionaryTrigger = null;
 
-  function recordKey(card) { return reverse ? `reverse:${card.id}` : card.id; }
+  function recordKey(card) {
+    const direction = reverse ? `reverse:${card.id}` : card.id;
+    return english ? `en:${direction}` : direction;
+  }
   function activeRecord(card) { return state.records[recordKey(card)]; }
   function activeRecords(deck) {
     const records = Object.create(null);
@@ -97,7 +290,7 @@
         button.textContent = part.word;
         button.dataset.word = part.word;
         button.disabled = true;
-        button.setAttribute("aria-label", `查看关键词 ${part.word} 的详细解释`);
+        button.setAttribute("aria-label", localized(`查看关键词 ${part.word} 的详细解释`, `View details for ${part.word}`));
         button.setAttribute("aria-controls", "dictionary-popover");
         button.setAttribute("aria-expanded", "false");
         button.addEventListener("mouseenter", () => showDictionary(button));
@@ -213,23 +406,27 @@
   function renderDictionary(card, word, data, loading = false, failed = false) {
     const wholeCard = lookupForm(card.term).toLocaleLowerCase("fr") === word.toLocaleLowerCase("fr");
     $("dictionary-term").textContent = word;
-    $("dictionary-pos").textContent = wholeCard ? card.pos || card.levels.join(" / ") : "关键词";
-    $("dictionary-meaning-label").textContent = wholeCard ? "本题释义" : "原词组／句子释义";
+    $("dictionary-pos").textContent = wholeCard ? labelFor(card.pos) || card.levels.join(" / ") : localized("关键词", "Keyword");
+    $("dictionary-meaning-label").textContent = wholeCard ? localized("本题释义", "Meaning in this card") : localized("原词组／句子释义", "Full phrase meaning");
     $("dictionary-meaning").textContent = wholeCard ? card.meaning : `${card.term} — ${card.meaning}`;
-    $("dictionary-note-row").hidden = !wholeCard || !card.note;
+    $("dictionary-note-row").hidden = english || !wholeCard || !card.note;
     $("dictionary-note").textContent = card.note || "";
     dictionaryList("dictionary-definitions", (data?.definitions || []).map(item =>
       `${item.partOfSpeech ? `${item.partOfSpeech} · ` : ""}${item.text}`),
-      loading ? "正在查询词典…" : failed ? "词典暂时不可用，请查看原词条。" : "未收录此词条或短语。");
+      loading ? localized("正在查询词典…", "Looking up dictionary…") : failed
+        ? localized("词典暂时不可用，请查看原词条。", "Dictionary unavailable; see the card meaning.")
+        : localized("未收录此词条或短语。", "No entry for this word or phrase."));
     const localExample = card.example && card.example.toLocaleLowerCase("fr").includes(word.toLocaleLowerCase("fr"))
       ? card.example : "";
     const examples = [localExample, ...(data?.examples || [])].filter(Boolean);
     dictionaryList("dictionary-examples", [...new Set(examples)],
-      loading ? "正在查找例句…" : "暂无例句。", "dictionary-example");
+      loading ? localized("正在查找例句…", "Looking for examples…") : localized("暂无例句。", "No examples available."), "dictionary-example");
     dictionaryList("dictionary-synonyms", data?.synonyms || [],
-      loading ? "正在查找…" : failed || !data?.availability?.relations ? "暂未获取。" : "词典未列出。 ");
+      loading ? localized("正在查找…", "Looking up…") : failed || !data?.availability?.relations
+        ? localized("暂未获取。", "Not available.") : localized("词典未列出。", "None listed."));
     dictionaryList("dictionary-antonyms", data?.antonyms || [],
-      loading ? "正在查找…" : failed || !data?.availability?.relations ? "暂未获取。" : "词典未列出。 ");
+      loading ? localized("正在查找…", "Looking up…") : failed || !data?.availability?.relations
+        ? localized("暂未获取。", "Not available.") : localized("词典未列出。", "None listed."));
     const lookup = data?.lookupTerm || word;
     $("dictionary-source-fr").href = data?.sources?.french ||
       `https://fr.wiktionary.org/wiki/${encodeURIComponent(lookup)}#Fran%C3%A7ais`;
@@ -282,7 +479,7 @@
   function saveSyncMeta() {
     if (!syncKey) return;
     try { localStorage.setItem(syncKey, JSON.stringify(syncMeta)); }
-    catch (_) { showMessage("本机暂存失败，请检查浏览器存储设置。", true); }
+    catch (_) { showMessage(localized("本机暂存失败，请检查浏览器存储设置。", "Local saving failed. Check your browser storage settings."), true); }
   }
 
   function syncStatus(kind, label, detail) {
@@ -308,13 +505,13 @@
       let data = null;
       try { data = await response.json(); } catch (_) { /* unavailable */ }
       if (!response.ok) {
-        const error = new Error(data?.error || `同步失败（${response.status}）`);
+        const error = new Error(data?.error || localized(`同步失败（${response.status}）`, `Sync failed (${response.status})`));
         error.status = response.status;
         throw error;
       }
       return data;
     } catch (error) {
-      if (error.name === "AbortError") throw new Error("连接超时，请点击“立即同步”重试");
+      if (error.name === "AbortError") throw new Error(localized("连接超时，请点击“立即同步”重试", "Connection timed out. Tap Sync now to retry."));
       throw error;
     } finally {
       clearTimeout(timeout);
@@ -339,7 +536,7 @@
 
   function useAccount(cloud) {
     if (typeof cloud.accountId !== "string" || !cloud.accountId) {
-      throw new Error("无法确认当前账号，请刷新页面重试。");
+      throw new Error(localized("无法确认当前账号，请刷新页面重试。", "Could not identify your account. Please refresh."));
     }
     if (accountId === cloud.accountId) return;
     accountId = cloud.accountId;
@@ -357,7 +554,7 @@
     if (syncBusy) return false;
     syncBusy = true;
     if (!quiet || !syncReady || syncMeta.pending.length) {
-      syncStatus("pending", "正在同步", "正在读取这个账号的最新进度…");
+      syncStatus("pending", localized("正在同步", "Syncing"), localized("正在读取这个账号的最新进度…", "Reading the latest progress for this account…"));
     }
     $("sync-button").disabled = true;
     try {
@@ -372,7 +569,8 @@
       }
       do {
         while (syncMeta.pending.length) {
-          syncStatus("pending", "正在同步", `还有 ${syncMeta.pending.length} 道题待同步；记录已暂存在本机。`);
+          syncStatus("pending", localized("正在同步", "Syncing"),
+            localized(`还有 ${syncMeta.pending.length} 道题待同步；记录已暂存在本机。`, `${syncMeta.pending.length} answers pending; saved on this device.`));
           const event = syncMeta.pending[0];
           const result = await api({ type: "answer", ...event });
           syncMeta.pending.shift();
@@ -385,12 +583,15 @@
       syncReady = true;
       $("sign-in-link").hidden = true;
       $("switch-account-button").hidden = false;
-      syncStatus("", "已同步", `已同步到 ${cloud.account}。手机和电脑请登录同一账号。`);
+      syncStatus("", localized("已同步", "Synced"), localized(`已同步到 ${cloud.account}。手机和电脑请登录同一账号。`,
+        `Synced to ${cloud.account}. Sign in to the same account on your phone and computer.`));
       if (!session.locked && !session.answered) advance();
       return true;
     } catch (error) {
       if (error.status === 409 && /reset on another/.test(error.message) && syncMeta.pending.length) {
-        const discard = window.confirm("账号进度已在另一设备清空或导入，本机仍有未同步题目。确定丢弃这些未同步题目并读取账号最新进度吗？取消后可先导出本机备份。 ");
+        const discard = window.confirm(localized(
+          "账号进度已在另一设备清空或导入，本机仍有未同步题目。确定丢弃这些未同步题目并读取账号最新进度吗？取消后可先导出本机备份。 ",
+          "Account progress changed on another device, but this device has unsynced answers. Discard them and load the latest account progress? Cancel to export a backup first."));
         if (discard) {
           try {
             const cloud = await api();
@@ -401,7 +602,7 @@
             applyCloud(cloud);
             syncReady = true;
             $("switch-account-button").hidden = false;
-            syncStatus("", "已同步", `已同步到 ${cloud.account}。`);
+            syncStatus("", localized("已同步", "Synced"), localized(`已同步到 ${cloud.account}。`, `Synced to ${cloud.account}.`));
             return true;
           } catch (_) { /* keep the pending backup if recovery fails */ }
         }
@@ -411,11 +612,12 @@
       if (error.status === 401) $("switch-account-button").hidden = true;
       const queued = syncMeta.pending.length;
       const detail = error.status === 401
-        ? "请使用你自己的 ChatGPT 账号登录，练习进度会单独保存。"
-        : queued ? `${queued} 道题暂存在本机，联网后点“立即同步”；在同步前不要清除浏览器数据。`
-          : `云端暂不可用：${error.message}。请稍后点“立即同步”。`;
-      syncStatus("error", queued ? "待同步" : "同步失败", detail);
-      if (!syncReady) showMessage("首次同步完成前暂不能答题，以免手机和电脑重复练习。", true);
+        ? localized("请使用你自己的 ChatGPT 账号登录，练习进度会单独保存。", "Sign in with your ChatGPT account; progress is separate for each account.")
+        : queued ? localized(`${queued} 道题暂存在本机，联网后点“立即同步”；在同步前不要清除浏览器数据。`,
+          `${queued} answers are saved on this device. Sync before clearing browser data.`)
+          : localized(`云端暂不可用：${error.message}。请稍后点“立即同步”。`, `Cloud sync is unavailable: ${error.message}. Try again later.`);
+      syncStatus("error", queued ? localized("待同步", "Pending sync") : localized("同步失败", "Sync failed"), detail);
+      if (!syncReady) showMessage(localized("首次同步完成前暂不能答题，以免手机和电脑重复练习。", "Answering is paused until the first sync completes."), true);
       return false;
     } finally {
       syncBusy = false;
@@ -430,7 +632,8 @@
     button.disabled = true;
     const synchronized = await syncNow();
     if (!synchronized || syncMeta.pending.length) {
-      showMessage("切换已暂停：请先完成同步；若一直失败，请导出进度备份后再尝试。", true);
+      showMessage(localized("切换已暂停：请先完成同步；若一直失败，请导出进度备份后再尝试。",
+        "Account switch paused: sync first. If it keeps failing, export a backup before retrying."), true);
       button.disabled = false;
       return;
     }
@@ -451,18 +654,21 @@
 
   function cleanState(raw) {
     const fresh = { version: 2, signature: meta.signature, totalAnswers: 0,
-      records: Object.create(null), level: "all", scope: "all", mode: "learning", reverseMode: "learning" };
+      records: Object.create(null), level: "all", scope: "all", mode: "learning",
+      reverseMode: "learning", enMode: "learning", enReverseMode: "learning" };
     if (!raw || typeof raw !== "object") return fresh;
     fresh.totalAnswers = Number.isSafeInteger(raw.totalAnswers) && raw.totalAnswers >= 0 ? raw.totalAnswers : 0;
     if (raw.records && typeof raw.records === "object") {
       for (const [id, value] of Object.entries(raw.records)) {
-        const isReverse = id.startsWith("reverse:");
-        const baseId = isReverse ? id.slice(8) : id;
+        const isEnglish = id.startsWith("en:");
+        const unprefixed = isEnglish ? id.slice(3) : id;
+        const isReverse = unprefixed.startsWith("reverse:");
+        const baseId = isReverse ? unprefixed.slice(8) : unprefixed;
         const resolved = aliases[baseId] || baseId;
         if (!byId.has(resolved)) continue;
         const record = cleanRecord(value);
         if (record) {
-          const key = isReverse ? `reverse:${resolved}` : resolved;
+          const key = `${isEnglish ? "en:" : ""}${isReverse ? "reverse:" : ""}${resolved}`;
           const prior = fresh.records[key];
           if (!prior || (record.mastered && !prior.mastered) ||
               (record.mastered === prior.mastered && record.attempts > prior.attempts)) {
@@ -476,6 +682,8 @@
     if (raw.level === "baseline") fresh.level = "B2";
     if (raw.mode === "mastered") fresh.mode = "mastered";
     if (raw.reverseMode === "mastered") fresh.reverseMode = "mastered";
+    if (raw.enMode === "mastered") fresh.enMode = "mastered";
+    if (raw.enReverseMode === "mastered") fresh.enReverseMode = "mastered";
     return fresh;
   }
 
@@ -487,11 +695,10 @@
   function saveState() {
     state.level = ui.level.value;
     state.scope = ui.scope.value;
-    if (reverse) state.reverseMode = ui.mode.value;
-    else state.mode = ui.mode.value;
+    state[english ? (reverse ? "enReverseMode" : "enMode") : (reverse ? "reverseMode" : "mode")] = ui.mode.value;
     if (!storageKey) return;
     try { localStorage.setItem(storageKey, JSON.stringify(state)); }
-    catch (_) { showMessage("浏览器未允许本地保存；请用“导出进度”备份。", true); }
+    catch (_) { showMessage(localized("浏览器未允许本地保存；请用“导出进度”备份。", "Browser storage is unavailable. Export a progress backup."), true); }
   }
 
   function showMessage(message, error = false) {
@@ -526,11 +733,11 @@
 
   function buildLevelMenu() {
     ui.level.replaceChildren();
-    ui.level.append(makeOption("all", `A1–B2 累计 · ${examCards.length} 张`));
+    ui.level.append(makeOption("all", localized(`A1–B2 累计 · ${examCards.length} 张`, `A1–B2 · ${examCards.length}`)));
     for (const level of ["A1", "A2", "B1", "B2"]) {
-      ui.level.append(makeOption(level, `${level} · ${meta.levelCounts[level]} 张`));
+      ui.level.append(makeOption(level, localized(`${level} · ${meta.levelCounts[level]} 张`, `${level} · ${meta.levelCounts[level]}`)));
     }
-    ui.level.append(makeOption("everyday", `日常与地区用语 · ${everydayCards.length} 张`));
+    ui.level.append(makeOption("everyday", localized(`日常与地区用语 · ${everydayCards.length} 张`, `Everyday · ${everydayCards.length}`)));
     ui.level.value = state.level;
   }
 
@@ -542,27 +749,27 @@
     const deck = levelCards();
     const preferred = state.scope;
     ui.scope.replaceChildren();
-    ui.scope.append(makeOption("all", `此词库全部词汇 · ${deck.length} 张`));
+    ui.scope.append(makeOption("all", localized(`此词库全部词汇 · ${deck.length} 张`, `All categories · ${deck.length}`)));
     for (const group of ["听力", "分级词汇", "阅读", "写作", "同义替换", "连接词", "句型", "日常词汇", "地区口语"]) {
       const count = deck.filter(card => card.groups.includes(group) &&
         card.topicMeta.some(ref => ref.group === group && metaInLevel(ref))).length;
-      if (count >= 10) ui.scope.append(makeOption(`group:${group}`, `${group} · ${count} 张`));
+      if (count >= 10) ui.scope.append(makeOption(`group:${group}`, localized(`${group} · ${count} 张`, `${labelFor(group)} · ${count}`)));
     }
     for (const group of ["听力", "分级词汇", "阅读", "写作", "连接词", "日常词汇", "地区口语"]) {
       const optgroup = document.createElement("optgroup");
-      optgroup.label = `${group} · 具体主题`;
+      optgroup.label = localized(`${group} · 具体主题`, `${labelFor(group)} · topics`);
       const topics = [...new Set(deck.flatMap(card => card.topicMeta
         .filter(ref => ref.group === group && metaInLevel(ref)).map(ref => ref.topic)))];
       for (const topic of topics) {
         const count = deck.filter(card => card.topicMeta.some(ref =>
           ref.group === group && ref.topic === topic && metaInLevel(ref))).length;
-        optgroup.append(makeOption(`topic:${topic}`, `${topic} · ${count} 张`));
+        optgroup.append(makeOption(`topic:${topic}`, localized(`${topic} · ${count} 张`, `${labelFor(topic)} · ${count}`)));
       }
       if (topics.length) ui.scope.append(optgroup);
     }
     if ([...ui.scope.options].some(x => x.value === preferred)) ui.scope.value = preferred;
     else ui.scope.value = "all";
-    ui.mode.value = reverse ? state.reverseMode : state.mode;
+    ui.mode.value = state[english ? (reverse ? "enReverseMode" : "enMode") : (reverse ? "reverseMode" : "mode")];
   }
 
   function scopedCards() {
@@ -573,11 +780,12 @@
     const deck = scopedCards();
     const daily = ui.level.value === "everyday";
     document.querySelector(".eyebrow").textContent = daily
-      ? "自我检测 · 日常与地区用语独立词库" : "自我检测 · A1–B2 分级词汇";
+      ? localized("自我检测 · 日常与地区用语独立词库", "Self-check · everyday & regional French")
+      : localized("自我检测 · A1–B2 分级词汇", "Self-check · A1–B2 graded French");
     $("deck-size").textContent = (daily ? everydayMeta.uniqueCards : meta.uniqueCards).toLocaleString("zh-CN");
     $("source-size").textContent = daily
-      ? "独立日常库 · 与考试库分开"
-      : `B2 合并后 ${meta.levelCounts.B2.toLocaleString("zh-CN")} 张`;
+      ? localized("独立日常库 · 与考试库分开", "Separate from the exam deck")
+      : localized(`B2 合并后 ${meta.levelCounts.B2.toLocaleString("zh-CN")} 张`, `${meta.levelCounts.B2.toLocaleString("en")} combined B2 cards`);
     const mastered = deck.filter(c => activeRecord(c)?.mastered).length;
     const learning = deck.filter(c => activeRecord(c)?.attempts &&
       !activeRecord(c).mastered).length;
@@ -589,7 +797,7 @@
     const ratio = deck.length ? Math.round(mastered / deck.length * 100) : 0;
     $("mastery-fill").style.width = `${ratio}%`;
     $("mastery-bar").setAttribute("aria-valuenow", String(ratio));
-    $("progress-caption").textContent = `已掌握 ${mastered} / ${deck.length} · ${ratio}%`;
+    $("progress-caption").textContent = localized(`已掌握 ${mastered} / ${deck.length} · ${ratio}%`, `Mastered ${mastered} / ${deck.length} · ${ratio}%`);
     if (ui.library.open) renderLibrary();
   }
 
@@ -600,12 +808,20 @@
     $("session-gained").textContent = session.gained;
   }
 
+  function stageLabel(card) {
+    const stage = core.progress(activeRecord(card), card);
+    if (!english) return stage.label;
+    if (!activeRecord(card)?.attempts) return "Not answered yet";
+    if (activeRecord(card).mastered) return "Mastered";
+    return `Correct streak · ${stage.current}/${stage.target}`;
+  }
+
   function renderQuestion(card) {
     pronunciation.stop();
     if (dictionaryRequest) dictionaryRequest.abort();
     dictionaryRequest = null;
     closeDictionary();
-    if (pronunciation.supported) reportPronunciation("点击播放，使用本机法语语音。");
+    if (pronunciation.supported) reportPronunciation(localized("点击播放，使用本机法语语音。", "Tap play to use your device's French voice."));
     session.current = card;
     session.choices = reverse
       ? core.reverseOptions(card, scopedCards(), Math.random, levelCards())
@@ -616,8 +832,8 @@
     ui.feedback.hidden = true;
     ui.feedback.classList.remove("incorrect");
     ui.reveal.hidden = false;
-    $("question-number").textContent = `本次第 ${session.answered + 1} 题`;
-    $("card-stage").textContent = core.progress(activeRecord(card), card).label;
+    $("question-number").textContent = localized(`本次第 ${session.answered + 1} 题`, `Card ${session.answered + 1} this session`);
+    $("card-stage").textContent = stageLabel(card);
     const scopeGroup = ui.scope.value.startsWith("group:") ? ui.scope.value.slice(6) : "";
     const scopeTopic = ui.scope.value.startsWith("topic:") ? ui.scope.value.slice(6) : "";
     const refs = card.topicMeta.filter(metaInLevel);
@@ -626,19 +842,20 @@
     const shownGroup = scopeGroup || reference.group;
     const shownTopic = scopeTopic || reference.topic;
     const firstLevel = ["A1", "A2", "B1", "B2"].find(level => card.levels.includes(level));
-    $("card-level").textContent = ui.level.value === "everyday" ? "日常" :
+    $("card-level").textContent = ui.level.value === "everyday" ? localized("日常", "Everyday") :
       ui.level.value === "all" ? firstLevel : ui.level.value;
-    $("card-group").textContent = shownGroup;
-    $("card-topic").textContent = shownTopic === shownGroup ? "" : shownTopic;
-    $("card-pos").textContent = card.pos || "";
+    $("card-group").textContent = labelFor(shownGroup);
+    $("card-topic").textContent = shownTopic === shownGroup ? "" : labelFor(shownTopic);
+    $("card-pos").textContent = labelFor(card.pos) || "";
     if (reverse) {
       ui.termLabel.textContent = card.meaning;
-      ui.termLabel.lang = "zh-CN";
+      ui.termLabel.lang = english ? "en" : "zh-CN";
     } else {
       renderTerm(card);
       ui.termLabel.lang = "fr";
     }
-    $("question-title").classList.toggle("chinese-cue", reverse);
+    $("question-title").classList.toggle("chinese-cue", reverse && !english);
+    $("question-title").classList.toggle("english-cue", reverse && english);
     ui.context.textContent = card.example ? `“${card.example}”` : "";
     ui.context.hidden = reverse;
     ui.pronunciationActions.hidden = reverse;
@@ -655,7 +872,7 @@
       const label = document.createElement("span");
       label.className = "option-text";
       label.textContent = choice;
-      if (reverse) label.lang = "fr";
+      label.lang = reverse ? "fr" : english ? "en" : "zh-CN";
       button.append(letter, label);
       button.addEventListener("click", () => submit(index));
       ui.answers.append(button);
@@ -671,13 +888,13 @@
     ui.questionArea.hidden = true;
     ui.empty.hidden = false;
     if (ui.mode.value === "learning") {
-      $("empty-title").textContent = "这个范围的词都已掌握";
-      $("empty-copy").textContent = "太好了。可以复查已掌握词，或切换到其他分类继续练。";
-      $("empty-action").textContent = "复查已掌握词";
+      $("empty-title").textContent = localized("这个范围的词都已掌握", "All words in this scope are mastered");
+      $("empty-copy").textContent = localized("太好了。可以复查已掌握词，或切换到其他分类继续练。", "Review mastered words or choose another category.");
+      $("empty-action").textContent = localized("复查已掌握词", "Review mastered words");
     } else {
-      $("empty-title").textContent = "这里还没有已掌握词";
-      $("empty-copy").textContent = "先在学习模式完成词条的复现条件，再回到这里复查。";
-      $("empty-action").textContent = "开始学习";
+      $("empty-title").textContent = localized("这里还没有已掌握词", "No mastered words here yet");
+      $("empty-copy").textContent = localized("先在学习模式完成词条的复现条件，再回到这里复查。", "Complete the correct-answer streak in learning mode, then return to review.");
+      $("empty-action").textContent = localized("开始学习", "Start learning");
     }
   }
 
@@ -693,7 +910,7 @@
   function submit(index) {
     if (!session.current || session.locked) return;
     if (!syncReady) {
-      showMessage("首次同步完成前请先点“立即同步”，避免重复练习。", true);
+      showMessage(localized("首次同步完成前请先点“立即同步”，避免重复练习。", "Sync your account before answering to avoid duplicate practice."), true);
       return;
     }
     const card = session.current;
@@ -711,6 +928,7 @@
       renderTerm(card);
       ui.termLabel.lang = "fr";
       $("question-title").classList.remove("chinese-cue");
+      $("question-title").classList.remove("english-cue");
       ui.context.hidden = false;
       ui.pronunciationActions.hidden = false;
       ui.voiceRow.hidden = false;
@@ -724,10 +942,10 @@
       cardId: key, correct, generation: syncMeta.generation });
     saveSyncMeta();
     saveState();
-    syncStatus("pending", "待同步", "本题已暂存在本机，正在同步到账号…");
+    syncStatus("pending", localized("待同步", "Pending sync"), localized("本题已暂存在本机，正在同步到账号…", "This answer is saved locally and is syncing to your account…"));
     renderStats();
     renderSession();
-    $("card-stage").textContent = core.progress(activeRecord(card), card).label;
+    $("card-stage").textContent = stageLabel(card);
     [...ui.answers.children].forEach((button, i) => {
       button.disabled = true;
       if (session.choices[i] === correctAnswer) button.classList.add("correct");
@@ -738,12 +956,15 @@
     ui.feedback.hidden = false;
     ui.feedback.classList.toggle("incorrect", !correct);
     $("feedback-icon").textContent = correct ? "✓" : "!";
-    $("feedback-title").textContent = correct ? "答对了" : index === -1 ? "已查看答案，记为错题" : "这次没选对";
+    $("feedback-title").textContent = correct ? localized("答对了", "Correct")
+      : index === -1 ? localized("已查看答案，记为错题", "Answer revealed — counted as incorrect")
+      : localized("这次没选对", "Not quite");
     $("feedback-meaning").textContent = correctAnswer;
-    const extra = [card.example ? `例句／搭配：${card.example}` : "",
-      card.note ? `用法提示：${card.note}` : "", "悬停或点击题目中的关键词可查看详解"].filter(Boolean);
+    const extra = [card.example ? localized(`例句／搭配：${card.example}`, `Example / collocation: ${card.example}`) : "",
+      !english && card.note ? `用法提示：${card.note}` : "",
+      localized("悬停或点击题目中的关键词可查看详解", "Hover over or tap a keyword above for dictionary details")].filter(Boolean);
     $("feedback-extra").textContent = extra.join("  ·  ");
-    $("feedback-progress").textContent = core.progress(activeRecord(card), card).label;
+    $("feedback-progress").textContent = stageLabel(card);
     ui.next.focus();
     void syncNow();
   }
@@ -754,7 +975,9 @@
     const matches = currentLibrary.filter(card => !query ||
       `${card.term} ${card.meaning} ${card.topic}`.toLocaleLowerCase().includes(query));
     $("library-count").textContent = query
-      ? `找到 ${matches.length} 张卡，显示前 40 张。` : `当前词库 ${currentLibrary.length} 张卡，显示前 40 张；输入关键词可缩小范围。`;
+      ? localized(`找到 ${matches.length} 张卡，显示前 40 张。`, `${matches.length} matches; showing the first 40.`)
+      : localized(`当前词库 ${currentLibrary.length} 张卡，显示前 40 张；输入关键词可缩小范围。`,
+        `${currentLibrary.length} cards in this deck; showing the first 40. Search to narrow them down.`);
     ui.results.replaceChildren();
     for (const card of matches.slice(0, 40)) {
       const row = document.createElement("div");
@@ -765,11 +988,11 @@
       const left = document.createElement("span");
       left.textContent = card.term;
       const detail = document.createElement("small");
-      detail.textContent = `${card.meaning} · ${card.levels.join(" / ")} · ${card.topic}`;
+      detail.textContent = `${card.meaning} · ${card.levels.join(" / ")} · ${labelFor(card.topic)}`;
       left.append(detail);
       const status = document.createElement("em");
-      status.textContent = activeRecord(card)?.mastered ? "已掌握"
-        : activeRecord(card)?.attempts ? "学习中" : "未见过";
+      status.textContent = activeRecord(card)?.mastered ? localized("已掌握", "Mastered")
+        : activeRecord(card)?.attempts ? localized("学习中", "Learning") : localized("未见过", "Unseen");
       if (activeRecord(card)?.mastered) status.className = "mastered";
       button.append(left, status);
       button.addEventListener("click", () => {
@@ -787,8 +1010,8 @@
       const speak = document.createElement("button");
       speak.type = "button";
       speak.className = "library-speak";
-      speak.textContent = "播放";
-      speak.setAttribute("aria-label", `播放 ${card.term} 的法语发音`);
+      speak.textContent = localized("播放", "Play");
+      speak.setAttribute("aria-label", localized(`播放 ${card.term} 的法语发音`, `Play French pronunciation of ${card.term}`));
       speak.disabled = !pronunciation.supported;
       speak.addEventListener("click", () => playPronunciation(card.term));
       row.append(button, speak);
@@ -807,7 +1030,7 @@
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    showMessage("进度备份已导出。请妥善保存 JSON 文件。 ");
+    showMessage(localized("进度备份已导出。请妥善保存 JSON 文件。 ", "Progress backup exported. Keep the JSON file safely."));
   }
 
   async function importProgress(file) {
@@ -859,6 +1082,8 @@
     state.scope = ui.scope.value;
     state.mode = "learning";
     state.reverseMode = "learning";
+    state.enMode = "learning";
+    state.enReverseMode = "learning";
     ui.mode.value = "learning";
     session.answered = 0; session.correct = 0; session.gained = 0; session.current = null;
     syncMeta.generation = cloud.generation;
@@ -877,21 +1102,25 @@
     $("answers").setAttribute("aria-label", "选择法语词汇");
     $("feedback-answer-label").textContent = "正确法语：";
   }
+  applyEnglishStatic();
   for (const link of document.querySelectorAll(".practice-nav a")) {
     if (link.dataset.direction === (reverse ? "reverse" : "forward"))
       link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   }
   $("deck-size").textContent = meta.uniqueCards.toLocaleString("zh-CN");
-  $("source-size").textContent = `B2 合并后 ${meta.levelCounts.B2.toLocaleString("zh-CN")} 张`;
+  $("source-size").textContent = localized(`B2 合并后 ${meta.levelCounts.B2.toLocaleString("zh-CN")} 张`,
+    `${meta.levelCounts.B2.toLocaleString("en")} combined B2 cards`);
   buildLevelMenu();
   buildScopeMenu();
   if (!pronunciation.supported) {
     ui.play.disabled = true;
     ui.slow.disabled = true;
-    reportPronunciation("当前浏览器不支持语音朗读。请换用支持系统朗读的浏览器。", true);
+    reportPronunciation(localized("当前浏览器不支持语音朗读。请换用支持系统朗读的浏览器。",
+      "This browser cannot speak text. Try a browser with system speech support."), true);
   }
   renderStats(); renderSession(); advance();
+  installLanguagePicker();
   ui.play.addEventListener("click", () => {
     if (session.current) playPronunciation(session.current.term);
   });
@@ -914,7 +1143,8 @@
   ui.locale.addEventListener("change", () => {
     pronunciation.stop();
     try { localStorage.setItem(voiceKey, ui.locale.value); } catch (_) { /* Optional preference. */ }
-    reportPronunciation(`已选择${ui.locale.value === "fr-CA" ? "加拿大" : "法国"}法语；点击播放试听。`);
+    reportPronunciation(localized(`已选择${ui.locale.value === "fr-CA" ? "加拿大" : "法国"}法语；点击播放试听。`,
+      `${ui.locale.value === "fr-CA" ? "Canadian" : "France"} French selected. Tap Play to listen.`));
   });
   ui.level.addEventListener("change", () => {
     state.level = ui.level.value;
@@ -945,7 +1175,8 @@
   ui.library.addEventListener("toggle", () => { if (ui.library.open) renderLibrary(); });
   ui.search.addEventListener("input", renderLibrary);
   document.addEventListener("keydown", event => {
-    if (event.altKey || event.ctrlKey || event.metaKey ||
+    if (document.querySelector(".language-dialog")?.open ||
+        event.altKey || event.ctrlKey || event.metaKey ||
         ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
     if (event.key === "Escape" && !ui.dictionaryPopover.hidden) {
       closeDictionary(); ui.next.focus(); return;

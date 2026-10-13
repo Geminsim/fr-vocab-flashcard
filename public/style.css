@@ -109,3 +109,26 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   .option{min-height:55px}
   .below-grid{grid-template-columns:1fr}
 }
+
+/* Language choice is an explicit first decision; the quiz remains the visual center. */
+.topbar-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.language-trigger{border:1px solid #cbded5;border-radius:999px;background:#fff;color:#315c52;padding:7px 13px;font-size:12px;font-weight:800;white-space:nowrap}
+.language-trigger:hover{border-color:#71af9e;background:#f3faf6}
+.language-dialog{border:0;border-radius:20px;background:#fff;color:var(--ink);width:min(610px,calc(100vw - 28px));max-height:calc(100vh - 28px);padding:0;box-shadow:0 26px 90px rgba(15,42,38,.3)}
+.language-dialog::backdrop{background:rgba(14,36,37,.58);backdrop-filter:blur(3px)}
+.language-dialog-inner{padding:35px}
+.language-kicker{font-size:11px;font-weight:900;letter-spacing:.17em;color:var(--teal);margin:0 0 14px}
+.language-dialog h2{font:500 clamp(26px,3.5vw,36px)/1.2 Georgia,"Times New Roman",serif;letter-spacing:-.035em;margin:0 0 13px}
+.language-dialog h2 span{font-family:"Microsoft YaHei UI","PingFang SC",sans-serif;font-size:.58em;font-weight:700;letter-spacing:0}
+.language-intro,.language-note{color:#627671;font-size:13px;line-height:1.7;margin:0}
+.language-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:25px 0 18px}
+.language-choices button{min-height:104px;border:1px solid #cadbd3;border-radius:13px;background:#f9fcfa;text-align:left;padding:17px;transition:border-color .16s,transform .16s,box-shadow .16s}
+.language-choices button:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 7px 22px rgba(20,89,72,.1)}
+.language-choices strong{display:block;font-size:17px;color:#183b37;margin-bottom:7px}
+.language-choices span{display:block;font-size:12px;color:#748680}
+.language-note{border-top:1px solid var(--line);padding-top:15px;font-size:11px}
+.language-close{display:block;margin:16px 0 0 auto;border:0;background:none;color:#267766;font-size:12px;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.language-close[hidden]{display:none}
+#question-title.english-cue{font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,2.7vw,40px);line-height:1.27;letter-spacing:-.02em}
+@media(max-width:760px){.topbar-actions{gap:5px}.language-trigger{font-size:11px;padding:6px 8px}.offline-badge{padding:5px 8px;font-size:11px}.language-dialog-inner{padding:24px}.language-choices{grid-template-columns:1fr;margin:20px 0 15px}.language-choices button{min-height:78px;padding:14px}}
+@media(max-width:400px){.brand>span:last-child{display:none}.topbar-actions{min-width:0}}
