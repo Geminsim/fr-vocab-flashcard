@@ -290,6 +290,7 @@
     $("sync-label").textContent = label;
     $("sync-detail").textContent = detail;
     $("sync-button").disabled = syncBusy;
+    $("switch-account-button").disabled = syncBusy;
   }
 
   async function api(body) {
@@ -353,7 +354,7 @@
   }
 
   async function syncNow({ quiet = false } = {}) {
-    if (syncBusy) return;
+    if (syncBusy) return false;
     syncBusy = true;
     if (!quiet || !syncReady || syncMeta.pending.length) {
       syncStatus("pending", "正在同步", "正在读取这个账号的最新进度…");
@@ -383,8 +384,10 @@
       applyCloud(cloud);
       syncReady = true;
       $("sign-in-link").hidden = true;
+      $("switch-account-button").hidden = false;
       syncStatus("", "已同步", `已同步到 ${cloud.account}。手机和电脑请登录同一账号。`);
       if (!session.locked && !session.answered) advance();
+      return true;
     } catch (error) {
       if (error.status === 409 && /reset on another/.test(error.message) && syncMeta.pending.length) {
         const discard = window.confirm("账号进度已在另一设备清空或导入，本机仍有未同步题目。确定丢弃这些未同步题目并读取账号最新进度吗？取消后可先导出本机备份。 ");
@@ -397,13 +400,15 @@
             saveSyncMeta();
             applyCloud(cloud);
             syncReady = true;
+            $("switch-account-button").hidden = false;
             syncStatus("", "已同步", `已同步到 ${cloud.account}。`);
-            return;
+            return true;
           } catch (_) { /* keep the pending backup if recovery fails */ }
         }
       }
       if (error.status === 401) syncReady = false;
       $("sign-in-link").hidden = error.status !== 401;
+      if (error.status === 401) $("switch-account-button").hidden = true;
       const queued = syncMeta.pending.length;
       const detail = error.status === 401
         ? "请使用你自己的 ChatGPT 账号登录，练习进度会单独保存。"
@@ -411,10 +416,26 @@
           : `云端暂不可用：${error.message}。请稍后点“立即同步”。`;
       syncStatus("error", queued ? "待同步" : "同步失败", detail);
       if (!syncReady) showMessage("首次同步完成前暂不能答题，以免手机和电脑重复练习。", true);
+      return false;
     } finally {
       syncBusy = false;
       $("sync-button").disabled = false;
+      $("switch-account-button").disabled = false;
     }
+  }
+
+  async function switchAccount() {
+    if (syncBusy) return;
+    const button = $("switch-account-button");
+    button.disabled = true;
+    const synchronized = await syncNow();
+    if (!synchronized || syncMeta.pending.length) {
+      showMessage("切换已暂停：请先完成同步；若一直失败，请导出进度备份后再尝试。", true);
+      button.disabled = false;
+      return;
+    }
+    const destination = reverse ? "/switch-account.html?direction=reverse" : "/switch-account.html";
+    window.location.assign(`/signout-with-chatgpt?return_to=${encodeURIComponent(destination)}`);
   }
 
   function cleanRecord(raw) {
@@ -914,6 +935,7 @@
   $("import-file").addEventListener("change", event => importProgress(event.target.files[0]));
   $("reset-button").addEventListener("click", resetProgress);
   $("sync-button").addEventListener("click", () => void syncNow());
+  $("switch-account-button").addEventListener("click", () => void switchAccount());
   window.addEventListener("online", () => void syncNow());
   window.addEventListener("focus", () => void syncNow({ quiet: true }));
   document.addEventListener("visibilitychange", () => {

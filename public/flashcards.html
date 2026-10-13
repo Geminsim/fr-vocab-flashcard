@@ -131,8 +131,11 @@
           <section class="panel data-panel" aria-labelledby="data-title">
             <div class="section-heading"><span class="section-index">04</span><h2 id="data-title">账号进度</h2></div>
             <p id="sync-detail">用自己的 ChatGPT 账号登录后即可练习；同一账号跨设备同步，不同账号的进度互不混用。</p>
-            <button type="button" id="sync-button" class="sync-button">立即同步</button>
-            <a id="sign-in-link" class="sign-in-link" href="/signin-with-chatgpt?return_to=%2Fflashcards.html" target="_top" hidden>使用 ChatGPT 登录</a>
+            <div class="account-actions">
+              <button type="button" id="sync-button" class="sync-button">立即同步</button>
+              <button type="button" id="switch-account-button" class="account-switch-button" hidden>切换账号</button>
+              <a id="sign-in-link" class="sign-in-link" href="/signin-with-chatgpt?return_to=%2Fflashcards.html" target="_top" hidden>使用 ChatGPT 登录</a>
+            </div>
             <div class="data-actions"><button type="button" id="export-button">导出进度</button><button type="button" id="import-button">导入进度</button><input type="file" id="import-file" accept="application/json,.json" hidden></div>
             <button class="reset-button" type="button" id="reset-button">清空全部答题记录</button>
             <p class="data-message" id="data-message" role="status" aria-live="polite"></p>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>切换练习账号 · 法语词汇闪卡</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .account-switch-page{max-width:570px;margin:clamp(2rem,8vh,5rem) auto;padding:clamp(1.5rem,5vw,2.5rem);background:#fff;border:1px solid #dce4df;border-radius:18px;box-shadow:var(--shadow)}
+    .account-switch-page h1{font-family:inherit;font-size:clamp(1.5rem,4vw,2rem);letter-spacing:0;margin-bottom:.75rem}
+    .account-switch-page p{color:#617278;font-size:14px;line-height:1.8}
+    .account-switch-page .sign-in-link{margin:1rem 0 0}
+    .account-switch-page .account-note{font-size:12px;border-top:1px solid #dce4df;padding-top:1rem;margin-top:1.5rem}
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar"><div class="brand"><span class="brand-mark">F<span>R</span></span><span>法语词汇闪卡</span></div><a id="back-link" href="flashcards.html">返回练习</a></header>
+    <main class="account-switch-page">
+      <h1>使用另一个账号继续练习</h1>
+      <p>当前网站会话已退出。选择下方按钮，使用你希望保存进度的 ChatGPT 账号重新登录。不同账号的答题记录互不混用，原账号的进度仍保留。</p>
+      <a id="switch-sign-in" class="sign-in-link" href="/signin-with-chatgpt?return_to=%2Fflashcards.html" target="_top">使用 ChatGPT 登录</a>
+      <p class="account-note">如果登录时自动返回原账号，请先在 ChatGPT 登录界面切换账号，或用另一个浏览器会话打开本网站。本网站无法直接替你选择 ChatGPT 账号。</p>
+    </main>
+  </div>
+  <script>
+    const reverse = new URLSearchParams(location.search).get("direction") === "reverse";
+    const destination = reverse ? "/reverse.html" : "/flashcards.html";
+    document.getElementById("switch-sign-in").href = `/signin-with-chatgpt?return_to=${encodeURIComponent(destination)}`;
+    document.getElementById("back-link").href = destination;
+  </script>
+</body>
+</html>
