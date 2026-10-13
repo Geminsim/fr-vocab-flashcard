@@ -1,0 +1,241 @@
+# TEF B2 听力场景词汇；每行：法语=中文|法语语境示例
+# 根据 TEF 官方听力题型所涉及的日常信息、公告、访谈与报道场景自主整理；并非官方封闭词表或频次统计。
+@公共通知与活动
+une annonce au public=公共广播；面向公众的通知|Une annonce au public sera diffusée à midi.
+une fermeture exceptionnelle=临时特别关闭|Le musée sera fermé à titre exceptionnel.
+à titre exceptionnel=作为特殊情况；破例|La bibliothèque ouvrira à titre exceptionnel.
+à compter de=自……起；从……开始生效|Les nouveaux horaires s'appliquent à compter de lundi.
+jusqu'à nouvel ordre=直至另行通知|L'accès reste interdit jusqu'à nouvel ordre.
+en raison de=由于|Le spectacle est annulé en raison de la pluie.
+une interruption de service=服务中断|Une interruption de service est prévue ce soir.
+un accès réservé=专用通道；仅限特定人员进入|L'accès est réservé aux abonnés.
+une entrée gratuite=免费入场|L'entrée est gratuite pour les étudiants.
+un nombre de places limité=名额有限|Le nombre de places est limité.
+sur réservation=须预约|La visite est accessible uniquement sur réservation.
+se présenter à l'accueil=到接待处报到|Veuillez vous présenter à l'accueil.
+une pièce justificative=证明文件；佐证材料|Une pièce justificative sera demandée.
+une consigne de sécurité=安全须知|Écoutez les consignes de sécurité.
+une évacuation=疏散|Une évacuation du bâtiment est en cours.
+un événement reporté=延期举行的活动|L'événement est reporté à samedi.
+maintenu malgré=尽管……仍照常进行|Le concert est maintenu malgré la pluie.
+une modification d'horaire=时间安排变更|Une modification d'horaire vient d'être annoncée.
+
+@交通与行程变更
+une correspondance=换乘；衔接|Vous avez une correspondance à Lyon.
+un trajet direct=直达行程|Il existe un trajet direct jusqu'au centre.
+un terminus=终点站|Ce train a pour terminus Bordeaux.
+un quai=站台；码头|Le train partira du quai numéro trois.
+une voie=轨道；车道|Le départ aura lieu voie six.
+un arrêt supprimé=取消的停靠站|L'arrêt de République est supprimé.
+un retard annoncé=通报的延误|Un retard de vingt minutes est annoncé.
+un départ différé=推迟的出发|Le départ est différé d'une demi-heure.
+une circulation perturbée=交通运行受影响|La circulation est perturbée ce matin.
+un trafic interrompu=交通中断|Le trafic est interrompu entre deux stations.
+un itinéraire de remplacement=替代路线|Suivez l'itinéraire de remplacement.
+un service de navette=接驳车服务|Un service de navette est mis en place.
+un billet échangeable=可改签的车票|Ce billet est échangeable sans frais.
+un billet non remboursable=不可退款的车票|Ce tarif est non remboursable.
+une réservation obligatoire=必须预约|La réservation est obligatoire le week-end.
+un départ avancé=提前的出发时间|Le départ est avancé à sept heures.
+un départ retardé=延迟的出发时间|Le départ est retardé à dix heures.
+une durée estimée=预计时长|La durée estimée du trajet est de deux heures.
+
+@电话留言与预约
+un message sur répondeur=电话答录机留言|Vous avez un nouveau message sur votre répondeur.
+laisser un message=留言|Merci de laisser un message après le signal.
+être joignable=可以联系到|Je serai joignable cet après-midi.
+me rappeler dès que possible=尽快给我回电话|Pouvez-vous me rappeler dès que possible ?
+donner suite à un appel=回复来电；跟进电话|Nous donnerons suite à votre appel.
+un créneau disponible=可用的时间段|Un créneau est disponible jeudi matin.
+un rendez-vous maintenu=照常进行的预约|Votre rendez-vous est maintenu.
+reporter un rendez-vous=推迟预约；改期|Il faut reporter votre rendez-vous.
+avancer un rendez-vous=提前预约时间|Nous pouvons avancer votre rendez-vous.
+annuler un rendez-vous=取消预约|Je souhaite annuler mon rendez-vous.
+confirmer sa présence=确认出席|Merci de confirmer votre présence.
+au plus tard=最迟|Répondez au plus tard vendredi.
+dans les meilleurs délais=尽快；在最短时间内|Nous vous répondrons dans les meilleurs délais.
+une plage horaire=时间段|Choisissez une plage horaire.
+une disponibilité=空闲；可用性|Indiquez vos disponibilités.
+un empêchement de dernière minute=临时有事；最后一刻的变故|J'ai un empêchement de dernière minute.
+un changement de programme=计划变更|Je vous appelle pour un changement de programme.
+une confirmation par courriel=电子邮件确认|Vous recevrez une confirmation par courriel.
+
+@客服、消费与付款
+un service après-vente=售后服务|Contactez notre service après-vente.
+déposer une réclamation=提出投诉；申诉|Vous pouvez déposer une réclamation.
+un remboursement intégral=全额退款|Un remboursement intégral est possible.
+un remboursement partiel=部分退款|Nous proposons un remboursement partiel.
+des frais supplémentaires=额外费用|Des frais supplémentaires peuvent s'appliquer.
+des frais de dossier=手续费；档案处理费|Des frais de dossier sont facturés.
+une facture rectifiée=更正后的账单|Une facture rectifiée vous sera envoyée.
+un prélèvement automatique=自动扣款|Le prélèvement automatique aura lieu demain.
+un paiement échelonné=分期付款|Un paiement échelonné est possible.
+une échéance=截止期；到期日|La prochaine échéance est le mois prochain.
+un abonnement résilié=已取消的订阅|Votre abonnement est résilié.
+résilier un contrat=终止合同|Vous pouvez résilier le contrat en ligne.
+un délai de rétractation=撤销购买的法定期限|Vous disposez d'un délai de rétractation.
+un avoir=购物抵用额；贷项凭证|Nous pouvons vous proposer un avoir.
+un produit défectueux=有缺陷的商品|Le produit reçu est défectueux.
+une rupture de stock=缺货|Cet article est en rupture de stock.
+une livraison différée=延迟配送|La livraison est différée de trois jours.
+un suivi de commande=订单跟踪|Consultez le suivi de votre commande.
+
+@招聘与职场
+un poste à pourvoir=待招聘岗位|Plusieurs postes sont à pourvoir.
+une offre d'emploi=招聘信息|J'ai répondu à une offre d'emploi.
+un entretien d'embauche=求职面试|L'entretien d'embauche aura lieu lundi.
+une candidature retenue=入选的申请；获考虑的求职申请|Votre candidature a été retenue.
+une candidature écartée=未入选的申请|Sa candidature a été écartée.
+une période d'essai=试用期|La période d'essai dure deux mois.
+un contrat à durée déterminée=固定期限合同|Il s'agit d'un contrat à durée déterminée.
+un contrat à durée indéterminée=无固定期限合同|Elle a signé un contrat à durée indéterminée.
+un emploi à temps partiel=兼职工作|Ce poste est à temps partiel.
+des horaires variables=弹性或不固定的工作时间|Le poste prévoit des horaires variables.
+une prise de fonction=到岗；就任|La prise de fonction est prévue en septembre.
+une rémunération=报酬|La rémunération dépend de l'expérience.
+une prime=奖金；补贴|Une prime annuelle est prévue.
+une formation en interne=内部培训|Une formation en interne sera assurée.
+une réunion reportée=延期的会议|La réunion est reportée à mardi.
+une charge de travail=工作量|La charge de travail a augmenté.
+une réduction d'effectifs=裁员；缩减人员|L'entreprise annonce une réduction d'effectifs.
+une reconversion professionnelle=职业转型|Il envisage une reconversion professionnelle.
+
+@住房与行政手续
+un bail=租约|Le bail sera signé vendredi.
+un dépôt de garantie=租房押金|Un dépôt de garantie est demandé.
+des charges comprises=杂费已包含在租金中|Le loyer est de 900 euros, charges comprises.
+un état des lieux=房屋交接检查|L'état des lieux aura lieu lundi.
+un préavis=提前通知期|Il faut respecter un préavis d'un mois.
+une assurance habitation=住房保险|L'assurance habitation est obligatoire.
+un justificatif de domicile=住址证明|Apportez un justificatif de domicile.
+un dossier incomplet=材料不齐的申请|Votre dossier est incomplet.
+une pièce manquante=缺少的文件|Il manque une pièce à votre dossier.
+une demande en cours de traitement=正在处理的申请|Votre demande est en cours de traitement.
+un accusé de réception=收件确认；回执|Vous recevrez un accusé de réception.
+un délai de traitement=处理期限|Le délai de traitement est de six semaines.
+un renouvellement=续期；更新|Le renouvellement se fait en ligne.
+une démarche en ligne=网上办理手续|Cette démarche en ligne prend dix minutes.
+un formulaire à remplir=需要填写的表格|Vous trouverez un formulaire à remplir.
+une aide au logement=住房补助|Vous pouvez demander une aide au logement.
+une visite du logement=看房|Une visite du logement est prévue samedi.
+un logement disponible=可入住的住房|Un logement est disponible dès le mois prochain.
+
+@健康与医疗服务
+une consultation médicale=医疗问诊|La consultation médicale dure vingt minutes.
+une ordonnance=处方|Présentez votre ordonnance à la pharmacie.
+un médecin traitant=家庭医生；固定主治医生|Consultez d'abord votre médecin traitant.
+un examen de contrôle=复查；检查|Un examen de contrôle est prévu.
+un dépistage=筛查|Le dépistage est gratuit.
+un bilan de santé=健康检查|Elle fait un bilan de santé chaque année.
+une prise en charge médicale=医疗照护；医疗费用承担|La prise en charge médicale commence rapidement.
+une couverture maladie=医疗保险保障|Vérifiez votre couverture maladie.
+un délai d'attente=等待时间|Le délai d'attente dépasse trois semaines.
+un symptôme persistant=持续症状|Signalez tout symptôme persistant.
+une contre-indication=禁忌症；不宜使用的情况|Il existe une contre-indication à ce traitement.
+un effet secondaire=副作用|Ce médicament peut avoir des effets secondaires.
+un traitement préventif=预防性治疗|Un traitement préventif est conseillé.
+une urgence relative=非危及生命但需尽快处理的情况|Il s'agit d'une urgence relative.
+prendre des précautions=采取预防措施|Il faut prendre des précautions.
+suivre les recommandations=遵循建议|Suivez les recommandations du médecin.
+
+@教育与培训
+une inscription en ligne=网上报名|Les inscriptions en ligne ouvrent lundi.
+une date limite d'inscription=报名截止日期|La date limite d'inscription est vendredi.
+un dossier de candidature=申请材料|Envoyez votre dossier de candidature.
+une sélection sur dossier=根据申请材料筛选|L'admission se fait sur dossier.
+une formation à distance=远程培训|La formation à distance commence en octobre.
+une formation continue=继续教育；在职培训|Elle suit une formation continue.
+un cours en présentiel=线下课程；面授课|Le cours en présentiel est maintenu.
+un atelier pratique=实践工作坊|Un atelier pratique est proposé.
+un stage obligatoire=必修实习|Le stage obligatoire dure trois mois.
+une validation des acquis=既有经验或学习成果认证|La validation des acquis est possible.
+une équivalence de diplôme=学历等值认定|Demandez une équivalence de diplôme.
+un niveau requis=要求达到的水平|Un niveau B2 est requis.
+une épreuve de rattrapage=补考|Une épreuve de rattrapage est prévue.
+une bourse d'études=奖学金|Elle a obtenu une bourse d'études.
+des frais de scolarité=学费|Les frais de scolarité ont augmenté.
+un accompagnement personnalisé=个性化辅导|Un accompagnement personnalisé est proposé.
+
+@新闻、社会与政策
+une enquête=调查|Une enquête vient d'être publiée.
+un sondage=民意调查|Le sondage porte sur les habitudes de transport.
+une majorité de personnes interrogées=多数受访者|La majorité des personnes interrogées approuve la mesure.
+une minorité de répondants=少数受访者|Une minorité de répondants s'y oppose.
+une mesure annoncée=宣布的措施|La mesure annoncée prendra effet en janvier.
+une entrée en vigueur=生效|L'entrée en vigueur est prévue au printemps.
+un débat public=公共辩论|Le débat public se poursuit.
+une consultation citoyenne=公民意见征询|Une consultation citoyenne est lancée.
+une mobilisation=动员；行动|Une mobilisation est prévue samedi.
+une manifestation=示威；活动|La manifestation aura lieu en centre-ville.
+une revendication=诉求|Les revendications portent sur les salaires.
+un désaccord persistant=持续分歧|Un désaccord persistant bloque les négociations.
+un accord de principe=原则性同意|Un accord de principe a été trouvé.
+une mise en œuvre progressive=逐步实施|La mise en œuvre sera progressive.
+un bilan provisoire=初步总结|Le bilan provisoire est positif.
+une conséquence inattendue=意料之外的后果|La réforme a eu une conséquence inattendue.
+un témoin=目击者；证人|Un témoin raconte la scène.
+une source fiable=可靠消息来源|Il faut vérifier que la source est fiable.
+
+@环境、城市与科技
+un épisode de pollution=一轮污染事件|Un épisode de pollution est annoncé.
+une alerte météo=天气预警|Une alerte météo a été diffusée.
+une restriction de circulation=限行措施|Une restriction de circulation entre en vigueur.
+une zone piétonne=步行区|La rue devient une zone piétonne.
+une piste cyclable=自行车道|Une nouvelle piste cyclable ouvrira demain.
+une collecte des déchets=垃圾收集|La collecte des déchets est reportée.
+un tri sélectif=垃圾分类|Le tri sélectif devient obligatoire.
+une économie d'énergie=节能|Cette mesure permet une économie d'énergie.
+une consommation responsable=负责任消费|La campagne encourage une consommation responsable.
+une expérimentation=试验；实验|Une expérimentation commencera dans deux quartiers.
+un dispositif connecté=联网设备；智能装置|Le dispositif connecté transmet des données.
+une panne informatique=电脑或信息系统故障|Une panne informatique bloque les inscriptions.
+une mise à jour=更新|Une mise à jour du logiciel est nécessaire.
+une protection des données=数据保护|La protection des données reste une priorité.
+une fuite de données=数据泄露|Une fuite de données a été signalée.
+un accès à distance=远程访问|L'accès à distance est temporairement indisponible.
+
+@访谈观点与态度
+un point de vue nuancé=有保留、讲求分寸的观点|Elle défend un point de vue nuancé.
+une réserve=保留意见；顾虑|Le spécialiste émet une réserve.
+émettre des réserves=表达保留意见|Plusieurs habitants émettent des réserves.
+reconnaître un avantage=承认一项优点|Il reconnaît un avantage à cette solution.
+mettre en garde contre=警告……的风险|La chercheuse met en garde contre une généralisation.
+remettre en cause=质疑；动摇|Ces résultats remettent en cause l'hypothèse.
+prendre position=表明立场|L'association refuse de prendre position.
+se montrer favorable à=表示赞同|Les riverains se montrent favorables au projet.
+se montrer opposé à=表示反对|Il se montre opposé à la réforme.
+avoir des doutes sur=对……有疑虑|Elle a des doutes sur son efficacité.
+faire valoir que=提出理由称；主张|Il fait valoir que le coût serait trop élevé.
+souligner que=强调……|L'experte souligne que le délai est court.
+préciser que=进一步说明……|Le responsable précise que la mesure est temporaire.
+évoquer la possibilité de=提到……的可能性|Il évoque la possibilité de reporter le projet.
+laisser entendre que=暗示……|Elle laisse entendre que la décision est prise.
+se féliciter de=对……表示满意|La maire se félicite du résultat.
+regretter que=遗憾……|Il regrette que les habitants n'aient pas été consultés.
+mettre l'accent sur=着重强调|La directrice met l'accent sur la prévention.
+tirer une conclusion=得出结论|Il est trop tôt pour tirer une conclusion.
+revenir sur une décision=重新考虑或撤回决定|Le conseil pourrait revenir sur sa décision.
+
+@口语转折、限制与推断
+en fait=其实；实际上|En fait, le problème vient du calendrier.
+à vrai dire=说实话；实际上|À vrai dire, je ne suis pas convaincu.
+du moins=至少；更准确地说|Le projet est prêt, du moins sur le papier.
+en principe=原则上；按理说|En principe, l'entrée est gratuite.
+pas forcément=不一定|Ce n'est pas forcément plus cher.
+pas encore=还没有|Le dossier n'est pas encore complet.
+ne ... plus=不再……|Le service n'est plus disponible.
+ne ... que=仅仅；只……|Il ne reste que deux places.
+sauf si=除非|La visite aura lieu, sauf s'il pleut.
+à moins que=除非，接虚拟式|Nous partirons, à moins qu'il y ait une grève.
+à condition que=条件是，接虚拟式|Le remboursement est possible à condition que vous ayez le reçu.
+même si=即使，接直陈式|Même si le trajet est long, il reste pratique.
+alors que=而；然而|Le prix baisse alors que la demande augmente.
+tandis que=而；同时|Certains approuvent, tandis que d'autres hésitent.
+en revanche=相比之下|Le billet est cher ; en revanche, il est modifiable.
+pourtant=可是|Il avait réservé ; pourtant, il n'a pas pu entrer.
+néanmoins=然而|La solution est coûteuse ; néanmoins, elle est efficace.
+finalement=最终；总的来看|Finalement, la réunion aura lieu en ligne.
+au départ=起初|Au départ, personne n'était convaincu.
+désormais=从今以后|Désormais, les demandes se font en ligne.
+autrement dit=换句话说|Autrement dit, la date n'est pas fixée.
+cependant=然而|Cependant, le calendrier reste incertain.

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="TEF A1–B2 法语词汇闪卡自测：按等级与主题练习，记录每张卡的掌握进度。">
+  <title>TEF A1–B2 法语词汇闪卡自测</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23182b33'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Arial' font-size='30' font-weight='bold' fill='%238bd3be'%3EFR%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="vocab-data.js"></script>
+  <script defer src="everyday-data.js"></script>
+  <script defer src="quiz-core.js"></script>
+  <script defer src="pronunciation.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body data-quiz-direction="forward">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">F<span>R</span></span><span>TEF · B2 Vocabulary Lab</span></div>
+      <span class="offline-badge" id="sync-badge" role="status" aria-live="polite"><span class="status-dot"></span><span id="sync-label">正在同步</span></span>
+    </header>
+
+    <nav class="practice-nav" aria-label="练习方向">
+      <a href="flashcards.html" data-direction="forward">法语 → 中文</a>
+      <a href="reverse.html" data-direction="reverse">中文 → 法语</a>
+    </nav>
+
+    <div class="heading-row">
+      <div>
+        <p class="eyebrow">自我检测 · A1–B2 分级词汇</p>
+        <h1 lang="fr">C’est en forgeant qu’on devient forgeron.</h1>
+        <p class="proverb-translation">熟能生巧，练习让词汇真正属于你。</p>
+        <p class="lede" id="page-lede">看法语词或表达，选出词库中的中文含义。答题记录会决定它何时再次出现。</p>
+      </div>
+      <div class="deck-count" aria-label="词库规模"><strong id="deck-size">—</strong><span>张独立闪卡<br><small id="source-size">来自原词库</small></span></div>
+    </div>
+
+    <main class="workspace">
+      <aside class="sidebar">
+        <section class="panel controls-panel" aria-labelledby="controls-title">
+          <div class="section-heading"><span class="section-index">01</span><h2 id="controls-title">练习范围</h2></div>
+          <label for="level-select">选择词库 / 等级</label>
+          <select id="level-select" aria-describedby="level-help"></select>
+          <p class="field-help" id="level-help">日常与地区用语是独立词库，不计入 A1–B2 累计。</p>
+          <label for="scope-select">词库分类</label>
+          <select id="scope-select" aria-describedby="scope-help"></select>
+          <p class="field-help" id="scope-help">考试库按题型与主题，日常库按词性与地区语域细分。</p>
+          <label for="mode-select">练习模式</label>
+          <select id="mode-select">
+            <option value="learning">继续学习未掌握词</option>
+            <option value="mastered">复查已掌握词</option>
+          </select>
+          <div class="mini-divider"></div>
+          <p class="sidebar-caption">当前范围</p>
+          <div class="stat-grid">
+            <div><strong id="stat-total">—</strong><span>总词条</span></div>
+            <div><strong id="stat-mastered">—</strong><span>已掌握</span></div>
+            <div><strong id="stat-learning">—</strong><span>学习中</span></div>
+            <div><strong id="stat-new">—</strong><span>未见过</span></div>
+          </div>
+          <div class="progress-track" role="progressbar" id="mastery-bar" aria-label="当前范围已掌握比例" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="mastery-fill"></span></div>
+          <p class="progress-caption" id="progress-caption">正在读取词库…</p>
+        </section>
+
+      </aside>
+
+      <div class="main-column">
+        <section class="quiz-card" aria-labelledby="question-title">
+          <div id="question-area">
+            <div class="question-topline"><span id="question-number">第 1 题</span><span class="card-stage" id="card-stage">尚未作答</span></div>
+            <div class="question-meta"><span class="level-pill" id="card-level">B2</span><span class="meta-pill" id="card-group">阅读</span><span id="card-topic">主题</span><span id="card-pos"></span></div>
+            <div class="term-row">
+              <div class="term-lookup" id="term-lookup">
+                <h2 id="question-title"><span id="term-label" lang="fr">—</span></h2>
+                <div class="dictionary-popover" id="dictionary-popover" role="region" aria-label="词汇详解" hidden>
+                  <div class="dictionary-head"><div><strong id="dictionary-term" lang="fr"></strong><span id="dictionary-pos"></span></div><button id="dictionary-close" type="button" aria-label="关闭词汇详解">×</button></div>
+                  <dl class="dictionary-content">
+                    <div><dt id="dictionary-meaning-label">本题释义</dt><dd id="dictionary-meaning"></dd></div>
+                    <div id="dictionary-note-row"><dt>用法提示</dt><dd id="dictionary-note"></dd></div>
+                    <div><dt>词典释义 <small>英</small></dt><dd id="dictionary-definitions"></dd></div>
+                    <div><dt>使用例 <small>法</small></dt><dd id="dictionary-examples"></dd></div>
+                    <div><dt>近义词</dt><dd id="dictionary-synonyms"></dd></div>
+                    <div><dt>反义词</dt><dd id="dictionary-antonyms"></dd></div>
+                  </dl>
+                  <p class="dictionary-caution">词典可能含其他义项；词组的中文释义仅供理解语境。</p>
+                  <div class="dictionary-sources"><a id="dictionary-source-fr" target="_blank" rel="noopener noreferrer">法语维基词典</a><a id="dictionary-source-en" target="_blank" rel="noopener noreferrer">英文维基词典</a></div>
+                </div>
+              </div>
+              <div class="pronunciation-actions" id="pronunciation-actions" role="group" aria-label="播放法语词条发音">
+                <button class="pronunciation-button" id="play-pronunciation" type="button" aria-label="播放当前词条发音"><span aria-hidden="true">♪</span> 播放</button>
+                <button class="pronunciation-button subtle" id="play-pronunciation-slow" type="button" aria-label="慢速播放当前词条发音">慢速</button>
+              </div>
+            </div>
+            <p class="context" id="card-context" lang="fr"></p>
+            <div class="voice-row" id="voice-row">
+              <label for="voice-locale">发音口音</label>
+              <select id="voice-locale">
+                <option value="fr-FR">法国法语</option>
+                <option value="fr-CA">加拿大法语</option>
+              </select>
+              <p id="pronunciation-status" class="pronunciation-status" role="status" aria-live="polite">点击播放，使用本机法语语音。</p>
+            </div>
+            <p class="prompt" id="question-prompt">以下哪一项最符合词库中的中文释义？</p>
+            <div class="answers" id="answers" role="group" aria-label="选择中文释义"></div>
+            <div class="answer-footer">
+              <button class="text-button" id="reveal-button" type="button">查看答案 <span>（记为答错）</span></button>
+              <span class="key-hint">按 1–4 选择 · Enter 下一题</span>
+            </div>
+            <div class="feedback" id="feedback" role="status" aria-live="polite" hidden>
+              <div class="feedback-heading"><span id="feedback-icon" aria-hidden="true"></span><strong id="feedback-title"></strong></div>
+              <p class="feedback-answer"><span id="feedback-answer-label">正确释义：</span><strong id="feedback-meaning"></strong></p>
+              <p id="feedback-extra"></p>
+              <div class="feedback-bottom"><span id="feedback-progress"></span><button class="primary-button" id="next-button" type="button">下一题 <span aria-hidden="true">→</span></button></div>
+            </div>
+          </div>
+          <div class="empty-state" id="empty-state" hidden>
+            <span class="empty-icon" aria-hidden="true">✓</span>
+            <h2 id="empty-title">这个范围已经练完</h2>
+            <p id="empty-copy"></p>
+            <button class="primary-button" type="button" id="empty-action">复查已掌握词</button>
+          </div>
+        </section>
+
+        <div class="below-grid">
+          <section class="panel session-panel" aria-labelledby="session-title">
+            <div class="section-heading"><span class="section-index">03</span><h2 id="session-title">本次练习</h2></div>
+            <div class="session-numbers"><div><strong id="session-answered">0</strong><span>已答题</span></div><div><strong id="session-accuracy">—</strong><span>正确率</span></div><div><strong id="session-gained">0</strong><span>新掌握</span></div></div>
+            <p>系统会穿插新词与到期复习词，不会一直连续抽到同一张卡。</p>
+          </section>
+          <section class="panel data-panel" aria-labelledby="data-title">
+            <div class="section-heading"><span class="section-index">04</span><h2 id="data-title">账号进度</h2></div>
+            <p id="sync-detail">用自己的 ChatGPT 账号登录后即可练习；同一账号跨设备同步，不同账号的进度互不混用。</p>
+            <button type="button" id="sync-button" class="sync-button">立即同步</button>
+            <a id="sign-in-link" class="sign-in-link" href="/signin-with-chatgpt?return_to=%2Fflashcards.html" target="_top" hidden>使用 ChatGPT 登录</a>
+            <div class="data-actions"><button type="button" id="export-button">导出进度</button><button type="button" id="import-button">导入进度</button><input type="file" id="import-file" accept="application/json,.json" hidden></div>
+            <button class="reset-button" type="button" id="reset-button">清空全部答题记录</button>
+            <p class="data-message" id="data-message" role="status" aria-live="polite"></p>
+          </section>
+        </div>
+
+        <details class="library panel" id="library">
+          <summary><span><span class="section-index">05</span><strong>词条目录</strong><small>查找单词，查看状态并指定复习</small></span><span class="summary-arrow" aria-hidden="true">⌄</span></summary>
+          <div class="library-body"><label for="library-search">搜索法语词或中文含义</label><input id="library-search" type="search" placeholder="例如：logement / 住房"><p id="library-count" class="field-help"></p><p id="library-pronunciation-status" class="pronunciation-status" role="status" aria-live="polite"></p><div id="library-results" class="library-results"></div></div>
+        </details>
+      </div>
+      <section class="panel rule-panel" aria-labelledby="rules-title">
+        <div class="section-heading"><span class="section-index">02</span><h2 id="rules-title">如何判定掌握</h2></div>
+        <div class="rule-item"><span class="rule-number">01</span><p><strong>A1 / A2</strong><br>无论之前是否答错，连续答对 2 次即可掌握。</p></div>
+        <div class="rule-item"><span class="rule-number">02</span><p><strong>B1 / B2 / 日常库</strong><br>连续答对 3 次即可掌握；答错后重新计数。</p></div>
+        <p class="rule-footnote">跨等级词条按较低等级计算。两个练习方向分别记录掌握次数，均同步到同一账号；复查答错会退回当前方向的学习队列。</p>
+      </section>
+    </main>
+    <footer class="site-footer">TEF A1–B2 分级词汇与独立日常库 · 账号同步自测工具 <span>日常库为补充学习材料，不是官方考试词表；选择题按本词库释义判分。<a href="everyday-attribution.html">日常库来源与许可</a></span></footer>
+  </div>
+</body>
+</html>
