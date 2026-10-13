@@ -5,7 +5,7 @@ import { runInNewContext } from "node:vm";
 
 const context = {};
 runInNewContext(readFileSync(resolve(import.meta.dirname, "public/pronunciation.js"), "utf8"), context);
-const { createEngine } = context.TEFPronunciation;
+const { createEngine, createChineseEngine } = context.TEFPronunciation;
 
 class Utterance {
   constructor(text) { this.text = text; }
@@ -52,10 +52,24 @@ assert.equal(unsupported.supported, false);
 assert.equal(unsupported.play("bonjour", {}, report), false);
 assert.equal(reports.at(-1).error, true);
 
+voices = [{ lang: "en-US", name: "English" }, { lang: "zh-TW", name: "Chinese Taiwan" },
+  { lang: "zh-CN", name: "Chinese Mandarin" }];
+const chineseEngine = createChineseEngine(synth, Utterance);
+assert.equal(chineseEngine.play("安排；计划", report), true);
+assert.equal(spoken.at(-1).text, "安排；计划");
+assert.equal(spoken.at(-1).voice.name, "Chinese Mandarin");
+assert.equal(spoken.at(-1).lang, "zh-CN");
+voices = [{ lang: "en-US", name: "English" }];
+assert.equal(chineseEngine.play("词汇", report), false);
+assert.equal(reports.at(-1).error, true);
+
 const html = readFileSync(resolve(import.meta.dirname, "public/flashcards.html"), "utf8");
 for (const id of ["play-pronunciation", "play-pronunciation-slow", "voice-locale",
   "pronunciation-status", "library-pronunciation-status"]) {
   assert.ok(html.includes(`id="${id}"`), id);
 }
 assert.ok(html.indexOf("pronunciation.js") < html.indexOf("app.js"));
+const reverseHtml = readFileSync(resolve(import.meta.dirname, "public/reverse.html"), "utf8");
+assert.ok(reverseHtml.includes('id="play-chinese"'));
+assert.ok(reverseHtml.includes('id="chinese-pronunciation-status"'));
 console.log("Pronunciation tests passed.");

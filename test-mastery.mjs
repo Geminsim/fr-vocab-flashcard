@@ -140,4 +140,16 @@ server.answerProgress(twoDirections, { deviceId: "reverse-device-123",
   cardId: `reverse:${low.id}`, correct: true, seq: 2, generation: 0 });
 assert.equal(twoDirections.records[`reverse:${low.id}`].mastered, true);
 
+const languageProgress = { records: structuredClone(twoDirections.records),
+  totalAnswers: twoDirections.totalAnswers, generation: 0,
+  deviceSeq: structuredClone(twoDirections.deviceSeq), studyLanguage: null };
+const savedRecords = structuredClone(languageProgress.records);
+assert.equal(server.setStudyLanguage(languageProgress, "en"), true);
+assert.equal(server.setStudyLanguage(languageProgress, "en"), false);
+assert.equal(server.setStudyLanguage(languageProgress, "zh"), true);
+assert.deepEqual(languageProgress.records, savedRecords);
+server.resetProgress(languageProgress);
+assert.equal(languageProgress.studyLanguage, "zh");
+assert.throws(() => server.setStudyLanguage(languageProgress, "fr"), /Invalid study language/);
+
 console.log("PASS: both quiz directions, distinct choices, deduplicated terms, and synced mastery");

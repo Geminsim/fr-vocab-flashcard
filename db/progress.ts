@@ -54,6 +54,7 @@ export type CloudProgress = {
   totalAnswers: number;
   generation: number;
   deviceSeq: Record<string, number>;
+  studyLanguage: "en" | "zh" | null;
 };
 
 function db() {
@@ -62,7 +63,7 @@ function db() {
 }
 
 function blank(): CloudProgress {
-  return { records: {}, totalAnswers: 0, generation: 0, deviceSeq: {} };
+  return { records: {}, totalAnswers: 0, generation: 0, deviceSeq: {}, studyLanguage: null };
 }
 
 function validInt(value: unknown, max = 1_000_000_000) {
@@ -88,7 +89,16 @@ export function cleanRecord(raw: unknown): CardRecord | null {
 function parsePayload(value: string): CloudProgress {
   const raw = JSON.parse(value) as CloudProgress;
   if (!raw || typeof raw !== "object" || !raw.records) throw new Error("Invalid progress payload");
+  // Older accounts have no language choice yet; keep every existing answer intact.
+  raw.studyLanguage = raw.studyLanguage === "en" || raw.studyLanguage === "zh" ? raw.studyLanguage : null;
   return raw;
+}
+
+export function setStudyLanguage(progress: CloudProgress, input: unknown): boolean {
+  if (input !== "en" && input !== "zh") throw new Error("Invalid study language");
+  if (progress.studyLanguage === input) return false;
+  progress.studyLanguage = input;
+  return true;
 }
 
 export async function readProgress(userId: string): Promise<{ revision: number; progress: CloudProgress }> {

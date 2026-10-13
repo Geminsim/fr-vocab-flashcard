@@ -7,9 +7,16 @@
     ? examCards.concat(everydayCards) : null;
   const languageKey = "tef-primary-language-v1";
   let savedLanguage = null;
-  try { savedLanguage = localStorage.getItem(languageKey); } catch (_) { /* Preference is optional. */ }
+  try { savedLanguage = localStorage.getItem(languageKey); } catch (_) { /* Check session fallback. */ }
+  if (!savedLanguage) {
+    try { savedLanguage = sessionStorage.getItem(languageKey); } catch (_) { /* Default to English. */ }
+  }
   if (!["zh", "en"].includes(savedLanguage)) savedLanguage = null;
-  const language = savedLanguage === "en" ? "en" : "zh";
+  function rememberLanguage(value) {
+    try { localStorage.setItem(languageKey, value); return true; } catch (_) { /* Fall back to this tab. */ }
+    try { sessionStorage.setItem(languageKey, value); return true; } catch (_) { return false; }
+  }
+  const language = savedLanguage === "zh" ? "zh" : "en";
   const english = language === "en";
   const meanings = window.TEF_ENGLISH_MEANINGS || {};
   const cards = originalCards?.map(card => english
@@ -77,6 +84,9 @@
   let storageKey = null;
   let syncKey = null;
   let accountId = null;
+  let languageDialog = null;
+  let languageChoiceRequired = false;
+  let languageSaving = false;
   const voiceKey = "tef-pronunciation-locale-v1";
   const $ = id => document.getElementById(id);
   const ui = {
@@ -85,6 +95,7 @@
     reveal: $("reveal-button"), next: $("next-button"), library: $("library"),
     search: $("library-search"), results: $("library-results"), dataMessage: $("data-message"),
     play: $("play-pronunciation"), slow: $("play-pronunciation-slow"), locale: $("voice-locale"),
+    chineseAudio: $("chinese-audio"), chinesePlay: $("play-chinese"),
     termLabel: $("term-label"), dictionaryPopover: $("dictionary-popover"),
     context: $("card-context"), pronunciationActions: $("pronunciation-actions"),
     voiceRow: $("voice-row")
@@ -110,32 +121,77 @@
       <h2 id="language-dialog-title">Choose your study language<br><span>选择主要使用语言</span></h2>
       <p class="language-intro">The French deck stays the same. Choose the language used for meanings and answers.<br>法语词库不变；请选择释义和答案使用的语言。</p>
       <div class="language-choices">
-        <button type="button" data-language="zh"><strong>中文 ↔ Français</strong><span>中文释义 · Chinese meanings</span></button>
         <button type="button" data-language="en"><strong>English ↔ Français</strong><span>English meanings · 英文释义</span></button>
+        <button type="button" data-language="zh"><strong>中文 ↔ Français</strong><span>中文释义 · Chinese meanings</span></button>
       </div>
-      <p class="language-note">Your Chinese and English mastery counts stay separate under the same account.<br>中法与英法的掌握次数分开记录，并同步到同一账号。</p>
-      <button type="button" class="language-close" ${savedLanguage ? "" : "hidden"}>${english ? "Keep current language" : "继续当前语言"}</button>
+      <p class="language-note">This preference follows your account across devices. Chinese and English mastery counts stay separate.<br>语言偏好随账号同步；中法与英法的掌握次数仍分别记录。</p>
+      <p class="language-error" role="alert" hidden></p>
+      <button type="button" class="language-close">${english ? "Keep current language" : "继续当前语言"}</button>
     </div>`;
     document.body.append(dialog);
+    languageDialog = dialog;
     dialog.addEventListener("cancel", event => {
-      if (!savedLanguage) event.preventDefault();
+      if (languageChoiceRequired || languageSaving) event.preventDefault();
     });
     dialog.querySelector(".language-close").addEventListener("click", () => dialog.close());
     dialog.querySelectorAll("[data-language]").forEach(button => {
-      button.addEventListener("click", () => {
-        try { localStorage.setItem(languageKey, button.dataset.language); }
-        catch (_) { showMessage("无法保存语言偏好；请检查浏览器存储设置。", true); return; }
-        window.location.reload();
+      button.addEventListener("click", async () => {
+        if (languageSaving || !syncReady || syncBusy || syncMeta.pending.length) return;
+        languageSaving = true;
+        dialog.querySelectorAll("button").forEach(choice => { choice.disabled = true; });
+        const error = dialog.querySelector(".language-error");
+        error.hidden = true;
+        try {
+          const saved = await api({ type: "language", language: button.dataset.language });
+          if (saved.studyLanguage !== button.dataset.language) throw new Error("Language preference was not saved.");
+          const deviceStored = rememberLanguage(saved.studyLanguage);
+          languageChoiceRequired = false;
+          if (!deviceStored && saved.studyLanguage !== language) {
+            error.textContent = localized("账号已保存语言选择，但当前浏览器禁止本地存储，暂时无法切换界面。请允许存储后刷新。",
+              "Your account saved this choice, but this browser blocks local storage. Allow storage, then refresh to switch the page.");
+            error.hidden = false;
+            dialog.querySelector(".language-close").hidden = false;
+            return;
+          }
+          if (saved.studyLanguage === language) {
+            dialog.close();
+            dialog.querySelector(".language-close").hidden = false;
+          } else window.location.reload();
+        } catch (cause) {
+          error.textContent = localized(`语言偏好未保存：${cause.message}。请重试。`,
+            `Could not save your language choice: ${cause.message}. Please retry.`);
+          error.hidden = false;
+        } finally {
+          languageSaving = false;
+          dialog.querySelectorAll("button").forEach(choice => { choice.disabled = false; });
+        }
       });
     });
     trigger.addEventListener("click", async () => {
-      if (syncBusy || (syncMeta.pending.length && !(await syncNow()))) {
+      if (!syncReady || syncBusy || (syncMeta.pending.length && !(await syncNow()))) {
         showMessage(localized("请先完成同步，再切换语言。", "Please sync your answers before changing language."), true);
         return;
       }
-      dialog.showModal();
+      if (!dialog.open) dialog.showModal();
     });
-    if (!savedLanguage) dialog.showModal();
+  }
+
+  function applyAccountLanguage(cloud) {
+    const accountLanguage = cloud.studyLanguage === "zh" || cloud.studyLanguage === "en"
+      ? cloud.studyLanguage : null;
+    languageChoiceRequired = !accountLanguage;
+    languageDialog.querySelector(".language-close").hidden = languageChoiceRequired;
+    const targetLanguage = accountLanguage || "en";
+    if (targetLanguage !== language) {
+      if (!rememberLanguage(targetLanguage)) {
+        showMessage(localized("无法保存本机语言显示设置；请允许浏览器存储后刷新。",
+          "Could not store the display language on this device. Allow browser storage and refresh."), true);
+        return;
+      }
+      window.location.reload();
+      return;
+    }
+    if (languageChoiceRequired && !languageDialog.open) languageDialog.showModal();
   }
 
   function applyEnglishStatic() {
@@ -224,6 +280,7 @@
     footer.querySelector("a").textContent = "Everyday-deck sources and licenses";
   }
   const pronunciation = pronunciationApi.createEngine(window.speechSynthesis, window.SpeechSynthesisUtterance);
+  const chinesePronunciation = pronunciationApi.createChineseEngine(window.speechSynthesis, window.SpeechSynthesisUtterance);
   try {
     if (localStorage.getItem(voiceKey) === "fr-CA") ui.locale.value = "fr-CA";
   } catch (_) { /* Device preference is optional. */ }
@@ -586,6 +643,7 @@
       syncStatus("", localized("已同步", "Synced"), localized(`已同步到 ${cloud.account}。手机和电脑请登录同一账号。`,
         `Synced to ${cloud.account}. Sign in to the same account on your phone and computer.`));
       if (!session.locked && !session.answered) advance();
+      applyAccountLanguage(cloud);
       return true;
     } catch (error) {
       if (error.status === 409 && /reset on another/.test(error.message) && syncMeta.pending.length) {
@@ -603,6 +661,7 @@
             syncReady = true;
             $("switch-account-button").hidden = false;
             syncStatus("", localized("已同步", "Synced"), localized(`已同步到 ${cloud.account}。`, `Synced to ${cloud.account}.`));
+            applyAccountLanguage(cloud);
             return true;
           } catch (_) { /* keep the pending backup if recovery fails */ }
         }
@@ -715,7 +774,15 @@
   }
 
   function playPronunciation(term, slow = false) {
+    chinesePronunciation.stop();
     pronunciation.play(term, { locale: ui.locale.value, slow }, reportPronunciation);
+  }
+
+  function reportChinesePronunciation(message, error = false) {
+    if (!reverse) return;
+    const target = $("chinese-pronunciation-status");
+    target.textContent = message;
+    target.classList.toggle("error", error);
   }
 
   function inLevel(card, level = ui.level.value) {
@@ -818,6 +885,7 @@
 
   function renderQuestion(card) {
     pronunciation.stop();
+    chinesePronunciation.stop();
     if (dictionaryRequest) dictionaryRequest.abort();
     dictionaryRequest = null;
     closeDictionary();
@@ -858,6 +926,11 @@
     $("question-title").classList.toggle("english-cue", reverse && english);
     ui.context.textContent = card.example ? `“${card.example}”` : "";
     ui.context.hidden = reverse;
+    if (reverse) {
+      ui.chineseAudio.hidden = english;
+      if (!english) reportChinesePronunciation(chinesePronunciation.supported
+        ? "点击朗读中文题目。" : "当前浏览器不支持中文朗读。", !chinesePronunciation.supported);
+    }
     ui.pronunciationActions.hidden = reverse;
     ui.voiceRow.hidden = reverse;
     ui.answers.replaceChildren();
@@ -881,6 +954,7 @@
 
   function showEmpty() {
     pronunciation.stop();
+    chinesePronunciation.stop();
     if (dictionaryRequest) dictionaryRequest.abort();
     dictionaryRequest = null;
     closeDictionary();
@@ -925,6 +999,8 @@
     if (!before?.mastered && state.records[key].mastered) session.gained += 1;
     session.locked = true;
     if (reverse) {
+      chinesePronunciation.stop();
+      ui.chineseAudio.hidden = true;
       renderTerm(card);
       ui.termLabel.lang = "fr";
       $("question-title").classList.remove("chinese-cue");
@@ -1124,6 +1200,15 @@
   ui.play.addEventListener("click", () => {
     if (session.current) playPronunciation(session.current.term);
   });
+  if (reverse) {
+    ui.chinesePlay.disabled = english || !chinesePronunciation.supported;
+    ui.chinesePlay.addEventListener("click", () => {
+      if (!english && session.current && !session.locked) {
+        pronunciation.stop();
+        chinesePronunciation.play(session.current.meaning, reportChinesePronunciation);
+      }
+    });
+  }
   $("term-lookup").addEventListener("mouseleave", () => {
     if (!dictionaryPinned) closeDictionary();
   });

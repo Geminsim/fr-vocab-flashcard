@@ -1,7 +1,7 @@
 import { getChatGPTUser } from "../../chatgpt-auth";
 import {
   answerProgress, changeProgress, replaceProgress,
-  resetProgress, seedProgress, upgradeProgress,
+  resetProgress, seedProgress, setStudyLanguage, upgradeProgress,
 } from "../../../db/progress";
 
 export const dynamic = "force-dynamic";
@@ -32,13 +32,14 @@ export async function POST(request: Request) {
     body = await request.json() as Record<string, unknown>;
     if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Invalid request");
     const type = body.type;
-    if (!["seed", "answer", "replace", "reset"].includes(String(type))) {
+    if (!["seed", "answer", "replace", "reset", "language"].includes(String(type))) {
       return json({ error: "无法识别的同步操作。" }, 400);
     }
     const result = await changeProgress(user.userId, progress => {
       if (type === "seed") return seedProgress(progress, body);
       if (type === "answer") return answerProgress(progress, body);
       if (type === "replace") return replaceProgress(progress, body);
+      if (type === "language") return setStudyLanguage(progress, body.language);
       return resetProgress(progress);
     });
     if (type === "answer") {
