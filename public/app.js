@@ -71,9 +71,11 @@
   const everydayMeta = window.TEF_EVERYDAY_META;
   const aliases = window.TEF_CARD_ALIASES || {};
   const core = window.QuizCore;
+  const examCore = window.TEFExamCore;
+  const examApi = window.TEFExam;
   const pronunciationApi = window.TEFPronunciation;
   const reverse = document.body.dataset.quizDirection === "reverse";
-  if (!Array.isArray(cards) || !meta || !everydayMeta || !core || !pronunciationApi ||
+  if (!Array.isArray(cards) || !meta || !everydayMeta || !core || !pronunciationApi || !examCore || !examApi ||
       (english && Object.keys(meanings).length !== cards.length)) {
     document.body.textContent = "词库文件未加载。请保持 vocab-data.js、everyday-data.js、quiz-core.js 和 app.js 位于同一文件夹。";
     return;
@@ -168,6 +170,7 @@
       });
     });
     trigger.addEventListener("click", async () => {
+      if (examController?.isRunning()) examController.pause();
       if (!syncReady || syncBusy || (syncMeta.pending.length && !(await syncNow()))) {
         showMessage(localized("请先完成同步，再切换语言。", "Please sync your answers before changing language."), true);
         return;
@@ -229,7 +232,7 @@
       '#sign-in-link': "Sign in with ChatGPT",
       '#export-button': "Export progress",
       '#import-button': "Import progress",
-      '#reset-button': "Clear all answer records",
+      '#reset-button': "Clear practice answers (exam scores remain)",
       '#library summary strong': "Word library",
       '#library summary small': "Search, check status, and review a card",
       'label[for="library-search"]': "Search French or English meanings",
@@ -286,6 +289,7 @@
   } catch (_) { /* Device preference is optional. */ }
   const session = { answered: 0, correct: 0, gained: 0, current: null,
     choices: [], locked: false };
+  let examController = null;
   let state = cleanState(null);
   let syncReady = false;
   let syncBusy = false;
@@ -587,6 +591,7 @@
     saveSyncMeta();
     saveState();
     renderStats();
+    examController?.onCloud(cloud.exam);
     if (!session.locked && session.current && ui.mode.value === "learning" &&
         activeRecord(session.current)?.mastered) advance();
   }
@@ -605,6 +610,7 @@
     session.answered = 0; session.correct = 0; session.gained = 0;
     session.current = null; session.locked = false;
     buildLevelMenu(); buildScopeMenu(); renderStats(); renderSession(); advance();
+    examController?.onAccount(accountId);
   }
 
   async function syncNow({ quiet = false } = {}) {
@@ -638,6 +644,8 @@
       } while (syncMeta.pending.length);
       applyCloud(cloud);
       syncReady = true;
+      examController?.onScopeChange();
+      void examController?.syncPending();
       $("sign-in-link").hidden = true;
       $("switch-account-button").hidden = false;
       syncStatus("", localized("已同步", "Synced"), localized(`已同步到 ${cloud.account}。手机和电脑请登录同一账号。`,
@@ -659,6 +667,8 @@
             saveSyncMeta();
             applyCloud(cloud);
             syncReady = true;
+            examController?.onScopeChange();
+            void examController?.syncPending();
             $("switch-account-button").hidden = false;
             syncStatus("", localized("已同步", "Synced"), localized(`已同步到 ${cloud.account}。`, `Synced to ${cloud.account}.`));
             applyAccountLanguage(cloud);
@@ -687,12 +697,19 @@
 
   async function switchAccount() {
     if (syncBusy) return;
+    examController?.pause();
     const button = $("switch-account-button");
     button.disabled = true;
     const synchronized = await syncNow();
     if (!synchronized || syncMeta.pending.length) {
       showMessage(localized("切换已暂停：请先完成同步；若一直失败，请导出进度备份后再尝试。",
         "Account switch paused: sync first. If it keeps failing, export a backup before retrying."), true);
+      button.disabled = false;
+      return;
+    }
+    if (examController && !(await examController.syncPending())) {
+      showMessage(localized("考试进度尚未同步；请联网后重试切换账号。",
+        "Exam progress is not synced yet. Reconnect before switching accounts."), true);
       button.disabled = false;
       return;
     }
@@ -737,7 +754,7 @@
       }
     }
     if (typeof raw.scope === "string") fresh.scope = raw.scope;
-    if (["all", "A1", "A2", "B1", "B2", "everyday"].includes(raw.level)) fresh.level = raw.level;
+    if (["all", "A1", "A2", "B1", "B2", "everyday", "ultimate"].includes(raw.level)) fresh.level = raw.level;
     if (raw.level === "baseline") fresh.level = "B2";
     if (raw.mode === "mastered") fresh.mode = "mastered";
     if (raw.reverseMode === "mastered") fresh.reverseMode = "mastered";
@@ -805,6 +822,7 @@
       ui.level.append(makeOption(level, localized(`${level} · ${meta.levelCounts[level]} 张`, `${level} · ${meta.levelCounts[level]}`)));
     }
     ui.level.append(makeOption("everyday", localized(`日常与地区用语 · ${everydayCards.length} 张`, `Everyday · ${everydayCards.length}`)));
+    ui.level.append(makeOption("ultimate", localized(`全上！· 全部 ${cards.length} 张`, `All In! · all ${cards.length} cards`)));
     ui.level.value = state.level;
   }
 
@@ -846,11 +864,14 @@
   function renderStats() {
     const deck = scopedCards();
     const daily = ui.level.value === "everyday";
-    document.querySelector(".eyebrow").textContent = daily
+    const ultimate = ui.level.value === "ultimate";
+    document.querySelector(".eyebrow").textContent = ultimate
+      ? localized("自我检测 · 全上！整库挑战", "Self-check · All In! complete deck") : daily
       ? localized("自我检测 · 日常与地区用语独立词库", "Self-check · everyday & regional French")
       : localized("自我检测 · A1–B2 分级词汇", "Self-check · A1–B2 graded French");
-    $("deck-size").textContent = (daily ? everydayMeta.uniqueCards : meta.uniqueCards).toLocaleString("zh-CN");
-    $("source-size").textContent = daily
+    $("deck-size").textContent = (ultimate ? cards.length : daily ? everydayMeta.uniqueCards : meta.uniqueCards).toLocaleString("zh-CN");
+    $("source-size").textContent = ultimate
+      ? localized("考试库 + 日常库 · 全部分类", "Exam + everyday decks · every category") : daily
       ? localized("独立日常库 · 与考试库分开", "Separate from the exam deck")
       : localized(`B2 合并后 ${meta.levelCounts.B2.toLocaleString("zh-CN")} 张`, `${meta.levelCounts.B2.toLocaleString("en")} combined B2 cards`);
     const mastered = deck.filter(c => activeRecord(c)?.mastered).length;
@@ -1196,6 +1217,9 @@
       "This browser cannot speak text. Try a browser with system speech support."), true);
   }
   renderStats(); renderSession(); advance();
+  examController = examApi.create({ cards, quizCore: core, examCore, english, reverse, api,
+    labelFor, levelSelect: ui.level, scopeSelect: ui.scope, ready: () => syncReady,
+    restorePractice: advance, stopSpeech: () => { pronunciation.stop(); chinesePronunciation.stop(); } });
   installLanguagePicker();
   ui.play.addEventListener("click", () => {
     if (session.current) playPronunciation(session.current.term);
@@ -1232,13 +1256,14 @@
       `${ui.locale.value === "fr-CA" ? "Canadian" : "France"} French selected. Tap Play to listen.`));
   });
   ui.level.addEventListener("change", () => {
+    examController.pause();
     state.level = ui.level.value;
     state.scope = "all";
     buildScopeMenu();
-    saveState(); renderStats(); advance();
+    saveState(); renderStats(); advance(); examController.onScopeChange();
   });
-  ui.scope.addEventListener("change", () => { saveState(); renderStats(); advance(); });
-  ui.mode.addEventListener("change", () => { saveState(); renderStats(); advance(); });
+  ui.scope.addEventListener("change", () => { examController.pause(); saveState(); renderStats(); advance(); examController.onScopeChange(); });
+  ui.mode.addEventListener("change", () => { examController.pause(); saveState(); renderStats(); advance(); });
   ui.next.addEventListener("click", advance);
   ui.reveal.addEventListener("click", () => submit(-1));
   $("empty-action").addEventListener("click", () => {
@@ -1263,6 +1288,7 @@
     if (document.querySelector(".language-dialog")?.open ||
         event.altKey || event.ctrlKey || event.metaKey ||
         ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+    if (examController.handleKey(event)) return;
     if (event.key === "Escape" && !ui.dictionaryPopover.hidden) {
       closeDictionary(); ui.next.focus(); return;
     }

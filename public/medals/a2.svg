@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" role="img" aria-labelledby="title"><title id="title">A2 Silver Pathfinder</title>
+<defs><linearGradient id="silver" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".35" stop-color="#a7b7c2"/><stop offset=".7" stop-color="#eef5f6"/><stop offset="1" stop-color="#8298a6"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity=".24"/></filter></defs>
+<path d="M40 104 28 170l31-17 21 20 8-66M120 104l12 66-31-17-21 20-8-66" fill="#54788d" stroke="#315467" stroke-width="3"/>
+<circle cx="80" cy="78" r="63" fill="url(#silver)" stroke="#607988" stroke-width="4" filter="url(#shadow)"/><circle cx="80" cy="78" r="51" fill="#eff5f3" stroke="#819da8" stroke-width="2"/><circle cx="80" cy="78" r="43" fill="none" stroke="#b9cbd0" stroke-width="2" stroke-dasharray="2 5"/>
+<path d="m50 99 30-48 30 48M61 81h38M58 108h44" fill="none" stroke="#5c7888" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><text x="80" y="128" text-anchor="middle" fill="#435f70" font-family="Georgia,serif" font-weight="bold" font-size="16">A2</text>
+</svg>

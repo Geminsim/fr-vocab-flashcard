@@ -53,12 +53,14 @@
   }
 
   function levelEligible(card, level) {
+    if (level === "ultimate") return true;
     if (level === "all") return !card.decks.includes("everyday");
     if (level === "everyday") return card.decks.includes("everyday");
     return level === "baseline" ? card.decks.includes("baseline") : card.levels.includes(level);
   }
 
   function sourceEligible(reference, level) {
+    if (level === "ultimate") return true;
     if (level === "all") return reference.deck !== "everyday";
     if (level === "everyday") return reference.deck === "everyday";
     return level === "baseline" ? reference.deck === "baseline" : reference.level === level;

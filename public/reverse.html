@@ -13,6 +13,8 @@
   <script defer src="english-data.js"></script>
   <script defer src="quiz-core.js"></script>
   <script defer src="pronunciation.js"></script>
+  <script defer src="exam-core.js"></script>
+  <script defer src="exam.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body data-quiz-direction="reverse">
@@ -142,7 +144,7 @@
               <a id="sign-in-link" class="sign-in-link" href="/signin-with-chatgpt?return_to=%2Freverse.html" target="_top" hidden>使用 ChatGPT 登录</a>
             </div>
             <div class="data-actions"><button type="button" id="export-button">导出进度</button><button type="button" id="import-button">导入进度</button><input type="file" id="import-file" accept="application/json,.json" hidden></div>
-            <button class="reset-button" type="button" id="reset-button">清空全部答题记录</button>
+            <button class="reset-button" type="button" id="reset-button">清空练习答题记录（考试成绩保留）</button>
             <p class="data-message" id="data-message" role="status" aria-live="polite"></p>
           </section>
         </div>

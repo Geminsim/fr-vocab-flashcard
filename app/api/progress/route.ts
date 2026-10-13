@@ -1,6 +1,6 @@
 import { getChatGPTUser } from "../../chatgpt-auth";
 import {
-  answerProgress, changeProgress, replaceProgress,
+  answerProgress, changeProgress, checkpointExam, replaceProgress,
   resetProgress, seedProgress, setStudyLanguage, upgradeProgress,
 } from "../../../db/progress";
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     body = await request.json() as Record<string, unknown>;
     if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Invalid request");
     const type = body.type;
-    if (!["seed", "answer", "replace", "reset", "language"].includes(String(type))) {
+    if (!["seed", "answer", "replace", "reset", "language", "exam"].includes(String(type))) {
       return json({ error: "无法识别的同步操作。" }, 400);
     }
     const result = await changeProgress(user.userId, progress => {
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       if (type === "answer") return answerProgress(progress, body);
       if (type === "replace") return replaceProgress(progress, body);
       if (type === "language") return setStudyLanguage(progress, body.language);
+      if (type === "exam") return checkpointExam(progress, body.attempt);
       return resetProgress(progress);
     });
     if (type === "answer") {
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
     return json({ ...result.progress, revision: result.revision, account: user.email });
   } catch (error) {
     if (error instanceof SyntaxError) return json({ error: "进度数据格式无效。" }, 400);
-    if (error instanceof Error && /Invalid|Too many|Missing earlier|reset on another/.test(error.message)) {
+    if (error instanceof Error && /Invalid|Too many|Missing earlier|reset on another|Another exam/.test(error.message)) {
       return json({ error: error.message }, 409);
     }
     console.error("Progress save failed", error);

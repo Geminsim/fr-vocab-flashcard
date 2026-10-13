@@ -55,7 +55,34 @@ export type CloudProgress = {
   generation: number;
   deviceSeq: Record<string, number>;
   studyLanguage: "en" | "zh" | null;
+  exam: ExamState;
 };
+
+export type ExamAttempt = {
+  id: string;
+  key: string;
+  language: "en" | "zh";
+  direction: "forward" | "reverse";
+  level: string;
+  scope: string;
+  questions: Array<{ cardId: string; options: string[]; correctIndex: number }>;
+  cursor: number;
+  remainingMs: number;
+  status: "active" | "paused" | "failed" | "passed" | "abandoned";
+  seq: number;
+  startedAt: number;
+  updatedAt: number;
+  failure?: string;
+};
+
+export type ExamState = {
+  active: ExamAttempt | null;
+  history: Record<string, { best: number; total: number; passed: boolean }>;
+};
+
+function blankExam(): ExamState {
+  return { active: null, history: {} };
+}
 
 function db() {
   if (!env.DB) throw new Error("Progress database is unavailable");
@@ -63,7 +90,8 @@ function db() {
 }
 
 function blank(): CloudProgress {
-  return { records: {}, totalAnswers: 0, generation: 0, deviceSeq: {}, studyLanguage: null };
+  return { records: {}, totalAnswers: 0, generation: 0, deviceSeq: {}, studyLanguage: null,
+    exam: blankExam() };
 }
 
 function validInt(value: unknown, max = 1_000_000_000) {
@@ -91,7 +119,65 @@ function parsePayload(value: string): CloudProgress {
   if (!raw || typeof raw !== "object" || !raw.records) throw new Error("Invalid progress payload");
   // Older accounts have no language choice yet; keep every existing answer intact.
   raw.studyLanguage = raw.studyLanguage === "en" || raw.studyLanguage === "zh" ? raw.studyLanguage : null;
+  if (!raw.exam || typeof raw.exam !== "object" || !raw.exam.history) raw.exam = blankExam();
   return raw;
+}
+
+function cleanExamAttempt(input: unknown): ExamAttempt {
+  if (!input || typeof input !== "object") throw new Error("Invalid exam attempt");
+  const raw = input as Record<string, unknown>;
+  if (typeof raw.id !== "string" || !/^[\w-]{8,80}$/.test(raw.id) ||
+      (raw.language !== "en" && raw.language !== "zh") ||
+      (raw.direction !== "forward" && raw.direction !== "reverse") ||
+      typeof raw.level !== "string" || !["A1", "A2", "B1", "B2", "all", "everyday", "ultimate"].includes(raw.level) ||
+      typeof raw.scope !== "string" || !/^(all|(?:group|topic):.{1,80})$/u.test(raw.scope) ||
+      raw.key !== [raw.language, raw.direction, raw.level, raw.scope].join("|") ||
+      !Array.isArray(raw.questions) || raw.questions.length < 4 || raw.questions.length > 60 ||
+      !validInt(raw.cursor, raw.questions.length) || !validInt(raw.remainingMs, 15000) ||
+      !validInt(raw.seq) || !validInt(raw.startedAt, 9_999_999_999_999) ||
+      !validInt(raw.updatedAt, 9_999_999_999_999) ||
+      !["active", "paused", "failed", "passed", "abandoned"].includes(String(raw.status))) {
+    throw new Error("Invalid exam attempt");
+  }
+  const questions = raw.questions.map(item => {
+    const question = item as Record<string, unknown>;
+    if (!question || typeof question.cardId !== "string" ||
+        !/^[\w.-]{1,120}$/.test(question.cardId) ||
+        !Array.isArray(question.options) || question.options.length !== 4 ||
+        question.options.some(option => typeof option !== "string" || !option || option.length > 300) ||
+        !validInt(question.correctIndex, 3)) throw new Error("Invalid exam question");
+    return { cardId: question.cardId, options: question.options as string[],
+      correctIndex: Number(question.correctIndex) };
+  });
+  if ((raw.status === "passed") !== (Number(raw.cursor) === questions.length)) {
+    throw new Error("Invalid exam result");
+  }
+  return {
+    id: raw.id, key: raw.key as string, language: raw.language, direction: raw.direction,
+    level: raw.level, scope: raw.scope, questions,
+    cursor: Number(raw.cursor), remainingMs: Number(raw.remainingMs),
+    status: raw.status as ExamAttempt["status"], seq: Number(raw.seq),
+    startedAt: Number(raw.startedAt), updatedAt: Number(raw.updatedAt),
+    failure: typeof raw.failure === "string" ? raw.failure.slice(0, 30) : undefined,
+  };
+}
+
+export function checkpointExam(progress: CloudProgress, input: unknown): boolean {
+  const attempt = cleanExamAttempt(input);
+  const current = progress.exam.active;
+  if (current && current.id !== attempt.id) throw new Error("Another exam is already in progress");
+  if (current && attempt.seq <= current.seq) return false;
+  const finished = ["failed", "passed", "abandoned"].includes(attempt.status);
+  if (finished) {
+    const prior = progress.exam.history[attempt.key];
+    progress.exam.history[attempt.key] = {
+      best: Math.max(prior?.best || 0, attempt.cursor),
+      total: attempt.questions.length,
+      passed: !!prior?.passed || attempt.status === "passed",
+    };
+    progress.exam.active = null;
+  } else progress.exam.active = attempt;
+  return true;
 }
 
 export function setStudyLanguage(progress: CloudProgress, input: unknown): boolean {

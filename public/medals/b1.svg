@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" role="img" aria-labelledby="title"><title id="title">B1 Gold Ascent</title>
+<defs><linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fff2bd"/><stop offset=".42" stop-color="#c28b30"/><stop offset=".72" stop-color="#f6d574"/><stop offset="1" stop-color="#9e6f24"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-opacity=".26"/></filter></defs>
+<path d="M43 107 30 168l28-12 22 18 10-67M117 107l13 61-28-12-22 18-10-67" fill="#8c6a35" stroke="#68491f" stroke-width="3"/>
+<path d="M21 75c4-18 13-31 26-40M17 88c0-17 7-30 18-39M139 75c-4-18-13-31-26-40M143 88c0-17-7-30-18-39" fill="none" stroke="#d5ab53" stroke-width="4" stroke-linecap="round"/>
+<circle cx="80" cy="78" r="62" fill="url(#gold)" stroke="#866223" stroke-width="4" filter="url(#shadow)"/><circle cx="80" cy="78" r="49" fill="#193f47" stroke="#f5d780" stroke-width="3"/><path d="M47 78h66M80 47v62" stroke="#b8d1c6" stroke-width="2" opacity=".5"/>
+<path d="m58 91 22-35 22 35-22-8z" fill="#f7da87" stroke="#a87524" stroke-width="2"/><path d="m80 49 5 10-5 10-5-10z" fill="#fff4c1"/><text x="80" y="123" text-anchor="middle" fill="#fbe5a4" font-family="Georgia,serif" font-weight="bold" font-size="18">B1</text>
+</svg>

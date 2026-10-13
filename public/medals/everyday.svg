@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" role="img" aria-labelledby="title"><title id="title">Everyday Emerald Speaker</title>
+<defs><linearGradient id="green" x2="1" y2="1"><stop stop-color="#b8e7c7"/><stop offset=".48" stop-color="#277a60"/><stop offset="1" stop-color="#13533f"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-opacity=".25"/></filter></defs>
+<path d="M40 108 28 168l31-14 20 19 8-66M120 108l12 60-31-14-20 19-8-66" fill="#2c7656" stroke="#154633" stroke-width="3"/>
+<circle cx="80" cy="77" r="62" fill="url(#green)" stroke="#174f3f" stroke-width="4" filter="url(#shadow)"/><circle cx="80" cy="77" r="49" fill="#f4f9e9" stroke="#9acda0" stroke-width="3"/>
+<path d="M81 109c-15-21-11-49 11-64 3 20-3 33-11 40-8-18-21-24-34-23 0 20 11 34 34 47z" fill="#3c9270" stroke="#1f684f" stroke-width="2"/><path d="M81 107c3-21 13-36 25-46" fill="none" stroke="#d4f3cf" stroke-width="3" stroke-linecap="round"/><circle cx="110" cy="43" r="5" fill="#ebbd66"/>
+<text x="80" y="129" text-anchor="middle" fill="#275d4c" font-family="Georgia,serif" font-weight="bold" font-size="12">QUOTIDIEN</text>
+</svg>
