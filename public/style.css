@@ -158,7 +158,11 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 
 /* Full-deck exam: fixed side challenge rail, not a second-row card below the controls. */
 .workspace{grid-template-columns:minmax(190px,235px) minmax(0,1fr) minmax(190px,245px);gap:16px}
-.sidebar{display:grid;grid-column:1;grid-row:1;align-content:start;gap:16px}
+/* Keep translated stat labels from expanding the narrow grid rail over the quiz. */
+.sidebar{display:grid;grid-template-columns:minmax(0,1fr);grid-column:1;grid-row:1;align-content:start;gap:16px;min-width:0}
+.sidebar .controls-panel{min-width:0}
+.sidebar .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sidebar .stat-grid div{min-width:0;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:8px 9px}
 .controls-panel,.rule-panel,.exam-panel,.main-column{grid-column:auto;grid-row:auto}
 .main-column{grid-column:2;grid-row:1}
 .exam-panel{grid-column:3;grid-row:1;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;padding:18px;border-color:#d2dfd8;background:#fff}
@@ -195,7 +199,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .exam-cover button,.exam-result-actions button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:39px}
 .exam-cover button.exam-icon-only,.exam-result-actions button.exam-icon-only{width:39px;height:39px}
 @media(max-width:1050px){.quiz-card{padding:24px}.answers{grid-template-columns:1fr}}
-@media(max-width:860px){
+@media(max-width:980px){
   .workspace{display:flex;flex-direction:column;gap:12px}
   .sidebar{display:contents}
   .controls-panel{order:1;width:100%}
@@ -205,6 +209,12 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   .exam-medals{grid-template-columns:repeat(3,minmax(0,1fr))}
   .exam-medal.ultimate{grid-column:auto;display:grid;grid-template-columns:1fr;grid-template-rows:auto auto auto;justify-items:center;text-align:center;padding:7px 2px 6px}
   .exam-medal.ultimate img{grid-row:auto;width:78px;height:88px}
+}
+@media(min-width:761px) and (max-width:980px){
+  .controls-panel{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 12px;align-items:center;padding:16px 20px}
+  .controls-panel .section-heading,.controls-panel .field-help,.controls-panel .mini-divider,.controls-panel .sidebar-caption,.controls-panel .stat-grid{display:none}
+  .controls-panel label{margin:0}
+  .controls-panel .exam-shortcut,.controls-panel .progress-track,.controls-panel .progress-caption{grid-column:1/-1;margin:2px 0 0}
 }
 @media(max-width:760px){
   .exam-panel{padding:16px}
